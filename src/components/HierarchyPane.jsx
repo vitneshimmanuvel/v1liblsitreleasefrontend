@@ -19,8 +19,12 @@ import {
   FolderKanban, 
   FileCode,
   Layers,
-  Lock,
-  X
+  X,
+  ListChecks,
+  Link as LinkIcon,
+  CheckCircle2,
+  Building2,
+  Check
 } from 'lucide-react';
 import { apiService } from '../services/apiService';
 import { DEFAULT_POLICIES, DEFAULT_DEPARTMENTS } from '../data/defaultPolicies';
@@ -63,10 +67,26 @@ export default function HierarchyPane({
   const [departments, setDepartments] = useState(DEFAULT_DEPARTMENTS);
   const [internalPolicies, setInternalPolicies] = useState(DEFAULT_POLICIES);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isPinned, setIsPinned] = useState(false);
-  const [isAddDeptModalOpen, setIsAddDeptModalOpen] = useState(false);
-  const [newDeptName, setNewDeptName] = useState('');
-  const [isCreatingDept, setIsCreatingDept] = useState(false);
+  
+  // Pinned libraries state (persisted in localStorage)
+  const [pinnedPolicyIds, setPinnedPolicyIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('liblist_pinned_policies');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      // fallback
+    }
+    return ['personal-loans-assessment-sop', 'aml-ctf-screening-policy'];
+  });
+
+  // Task List state & Modal
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [tasks, setTasks] = useState([
+    { id: 'TSK-001', code: 'APS220-CR-01', desc: 'APS220-CR-01 Serviceability rate assessment buffer verification. Completed in meeting.', assigned: '@per2', date: '10/23/2026', status: 'Completed', completed: true },
+    { id: 'TSK-002', code: 'DTI-CAP-02', desc: 'Free text - Under review for DTI Cap 6.0x exception limits.', assigned: '@per2', date: '10/18/2026', status: 'Reassigned', completed: false },
+    { id: 'TSK-003', code: 'CDR-OPEN-03', desc: 'Self Reminder: Check APRA guidance updates on Open Banking streams.', assigned: '@self', date: '10/08/2026', status: 'In Progress', completed: false }
+  ]);
+
   // Default expanded to primary banking libraries so policies are immediately visible
   const [expandedDeptIds, setExpandedDeptIds] = useState(['credit-cards', 'retail-lending', 'onboarding', 'security', 'legal-compliance']);
 
@@ -77,6 +97,30 @@ export default function HierarchyPane({
         ? prev.filter(id => id !== deptId) 
         : [...prev, deptId]
     );
+  };
+
+  const handleTogglePin = (policyId, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setPinnedPolicyIds(prev => {
+      const updated = prev.includes(policyId)
+        ? prev.filter(id => id !== policyId)
+        : [...prev, policyId];
+      try {
+        localStorage.setItem('liblist_pinned_policies', JSON.stringify(updated));
+      } catch (err) {
+        // ignore
+      }
+      return updated;
+    });
+  };
+
+  const handleContextMenu = (policyId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleTogglePin(policyId, e);
   };
 
   // Fetch live hierarchy & fallback policies
@@ -112,7 +156,7 @@ export default function HierarchyPane({
     loadHierarchy();
   }, [refreshTrigger]);
 
-  // Robustly combine policies across defaults, backend fetch, and props to guarantee no department drops to 0
+  // Robustly combine policies across defaults, backend fetch, and props
   const combinedPolicies = [
     ...DEFAULT_POLICIES,
     ...(Array.isArray(internalPolicies) ? internalPolicies : []),
@@ -123,22 +167,6 @@ export default function HierarchyPane({
     if (p && p.id) policyMap.set(p.id, p);
   });
   const allAvailablePolicies = Array.from(policyMap.values());
-
-  const handleCreateDepartment = async (e) => {
-    e.preventDefault();
-    if (!newDeptName.trim()) return;
-    setIsCreatingDept(true);
-    try {
-      await apiService.createDepartment(newDeptName.trim(), 'folder', 'Department Manager');
-      setNewDeptName('');
-      setIsAddDeptModalOpen(false);
-      await loadHierarchy();
-    } catch (err) {
-      console.error('Failed to create department:', err);
-    } finally {
-      setIsCreatingDept(false);
-    }
-  };
 
   // Filter departments: Split into primary active banking categories vs empty/secondary categories
   const primaryDeptIds = ['credit-cards', 'retail-lending', 'onboarding', 'security', 'legal-compliance'];
@@ -159,6 +187,9 @@ export default function HierarchyPane({
   const displayedOther = otherDepartments.filter(d => 
     d.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Get pinned policies objects
+  const pinnedPolicies = allAvailablePolicies.filter(p => pinnedPolicyIds.includes(p.id));
 
   if (isCollapsed) return null;
 
@@ -181,8 +212,8 @@ export default function HierarchyPane({
             : 'relative z-10'}
         `}
       >
-        {/* Top Search bar with Pin icon & Visible Banking Blue Border */}
-        <div className="p-3 bg-[#f0f4f9] pb-1">
+        {/* Top Search bar */}
+        <div className="p-3 bg-[#f0f4f9] pb-1.5 border-b border-[#e2e8f0]">
           <div className="relative flex items-center group/search">
             <Search className="w-3.5 h-3.5 text-[#0057B8] absolute left-3 top-1/2 -translate-y-1/2 transition-colors pointer-events-none" />
             <input
@@ -190,379 +221,398 @@ export default function HierarchyPane({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search sections..."
-              className="w-full bg-white border-2 border-[#0057B8]/40 hover:border-[#0057B8] focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/20 rounded-xl pl-8 pr-14 py-1.5 text-[12.5px] text-slate-800 placeholder-slate-400 outline-none transition shadow-2xs font-medium"
+              className="w-full bg-white border-2 border-[#0057B8]/40 hover:border-[#0057B8] focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/20 rounded-xl pl-8 pr-8 py-1.5 text-[12px] text-slate-800 placeholder-slate-400 outline-none transition shadow-2xs font-medium"
             />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              {searchQuery && (
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                title="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-white hover:bg-[#0057B8] transition cursor-pointer"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable Navigation Area */}
+        <div className="flex-1 overflow-y-auto px-2 py-2 space-y-3.5 custom-scrollbar">
+
+          {/* 1. WORKSPACE CORE (TASK LIST & CORE OPTIONS) */}
+          <div className="space-y-1">
+            <div className="px-2 py-1 text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">
+              Workspace Core
+            </div>
+            <nav className="space-y-0.5">
+              {/* Task List with 3 Active badge */}
+              <button
+                onClick={() => setIsTaskModalOpen(true)}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[12px] rounded-lg text-slate-700 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200 shadow-xs hover:shadow-2xs transition group cursor-pointer text-left"
+              >
+                <span className="flex items-center gap-2 font-medium">
+                  <ListChecks className="w-3.5 h-3.5 text-[#0057B8]" />
+                  <span>Task List</span>
+                </span>
+                <span className="bg-blue-50 text-[#0057B8] border border-blue-200 text-[10px] px-1.5 py-0.2 rounded-md font-semibold">
+                  3 Active
+                </span>
+              </button>
+            </nav>
+          </div>
+
+          {/* 2. PINNED LIBRARIES */}
+          <div className="space-y-1 pt-1 border-t border-slate-200/80">
+            <div className="px-2 py-1 text-[10.5px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+              <span>Pinned Libraries</span>
+              <Pin className="w-3 h-3 text-slate-400" />
+            </div>
+
+            <nav className="space-y-0.5">
+              {pinnedPolicies.length === 0 ? (
+                <div className="px-2.5 py-1.5 text-[11px] text-slate-400 italic bg-white/50 rounded-lg border border-dashed border-slate-200">
+                  None selected
+                  <span className="block text-[10px] text-slate-400 not-italic mt-0.5">
+                    Right-click any library to pin
+                  </span>
+                </div>
+              ) : (
+                pinnedPolicies.map(pol => {
+                  const isPolSelected = selectedPolicyId === pol.id;
+                  return (
+                    <div
+                      key={`pinned-${pol.id}`}
+                      onClick={() => onSelectPolicy && onSelectPolicy(pol.id)}
+                      onContextMenu={(e) => handleContextMenu(pol.id, e)}
+                      className={`group flex items-center justify-between px-2.5 py-1.5 text-[11.5px] rounded-lg transition cursor-pointer border ${
+                        isPolSelected
+                          ? 'bg-[#0057B8] text-white border-[#0057B8] shadow-2xs font-medium'
+                          : 'bg-white hover:bg-blue-50/60 text-slate-700 border-slate-200/80 hover:border-blue-300'
+                      }`}
+                      title={`${pol.title} (Right-click to unpin)`}
+                    >
+                      <span className="truncate flex items-center gap-1.5 flex-1 min-w-0 pr-1">
+                        <LinkIcon className={`w-3 h-3 shrink-0 ${isPolSelected ? 'text-blue-200' : 'text-[#0057B8]'}`} />
+                        <span className="truncate">{pol.title}</span>
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className={`text-[9.5px] font-mono px-1 py-0.2 rounded ${
+                          isPolSelected ? 'bg-blue-900/60 text-blue-100' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          v{pol.version || '1.0'}
+                        </span>
+                        <button
+                          onClick={(e) => handleTogglePin(pol.id, e)}
+                          title="Unpin"
+                          className={`p-0.5 rounded transition ${
+                            isPolSelected ? 'hover:bg-blue-800 text-blue-200' : 'hover:bg-slate-200 text-slate-400'
+                          }`}
+                        >
+                          <X className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </nav>
+          </div>
+
+          {/* 3. LIBRARY LIST (WITH DIRECTLY VISIBLE '+' BUTTON, NO SHOW ALL) */}
+          <div className="space-y-1 pt-1 border-t border-slate-200/80">
+            <div className="px-2 py-1 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-[#0057B8]" />
+                <h2 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                  Library List
+                </h2>
+              </div>
+
+              {/* Directly visible + button */}
+              {canCreateDocument && (
                 <button
-                  onClick={() => setSearchQuery('')}
-                  title="Clear search"
-                  className="p-0.5 rounded-full text-slate-400 hover:text-white hover:bg-[#0057B8] transition cursor-pointer"
+                  onClick={() => onOpenAddPolicyModal && onOpenAddPolicyModal()}
+                  className="p-1 rounded-md text-[#0057B8] hover:bg-blue-100 hover:text-blue-900 border border-[#0057B8]/30 bg-white transition cursor-pointer flex items-center justify-center shadow-2xs"
+                  title="Create or Ingest Operational Policy"
+                  aria-label="Create Policy"
                 >
-                  <X className="w-3 h-3" />
+                  <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
                 </button>
               )}
-              <button
-                onClick={() => setIsPinned(!isPinned)}
-                title={isPinned ? "Unpin sidebar" : "Pin sidebar"}
-                className={`p-1 rounded-md transition border cursor-pointer ${
-                  isPinned 
-                    ? 'bg-[#0057B8] text-white border-[#0057B8] shadow-2xs' 
-                    : 'text-[#0057B8] bg-blue-50/80 hover:bg-[#0057B8] hover:text-white border-[#0057B8]/30 shadow-2xs'
-                }`}
-              >
-                <Pin className="w-3 h-3" />
-              </button>
             </div>
-          </div>
-        </div>
 
-        {/* Title Header: Exact Match to libtrack_UI (2).pdf: "Library Group" */}
-        <div className="px-3.5 pt-2.5 pb-1.5 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-[#0057B8]" />
-            <h2 className="text-[13.5px] font-bold text-slate-800 tracking-tight">
-              Library Group
-            </h2>
-          </div>
-          {selectedDepartmentId !== 'all' ? (
-            <button
-              onClick={() => onSelectDepartment('all')}
-              className="text-[11px] font-bold text-[#0057B8] bg-blue-50 hover:bg-[#0057B8] hover:text-white border-2 border-[#0057B8] px-2.5 py-0.5 rounded-lg transition-all cursor-pointer shadow-xs flex items-center gap-1 active:scale-95"
-              title="Show all library partitions"
-            >
-              <span>Show All</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => onSelectDepartment('all')}
-              className="text-[11px] font-semibold text-[#0057B8] bg-blue-50/70 hover:bg-blue-100 border border-[#0057B8]/30 px-2 py-0.5 rounded-lg transition shadow-2xs cursor-pointer"
-              title="Filter by category"
-            >
-              All Sections ({displayedPrimary.length})
-            </button>
-          )}
-        </div>
+            {/* Root CBA Bank Node Card */}
+            <div className="px-2.5 py-1.5 bg-white rounded-lg border border-slate-200/90 flex items-center justify-between text-[12px] font-semibold text-slate-800 shadow-2xs mb-1.5">
+              <span className="flex items-center gap-1.5 truncate">
+                <Building2 className="w-3.5 h-3.5 text-[#0057B8] shrink-0" />
+                <span className="truncate">CBA - Retail Standards</span>
+              </span>
+              <span className="text-[10px] bg-blue-50 text-[#0057B8] font-bold px-1.5 py-0.2 rounded border border-blue-200/60 shrink-0">
+                4 Products
+              </span>
+            </div>
 
-        {/* Department / Category Tree List */}
-        <div className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5 custom-scrollbar">
-          
-          {/* PRIMARY ACTIVE CATEGORIES WITH EXPANDABLE HIERARCHY */}
-          <div className="space-y-1">
-            {displayedPrimary.map((dept) => {
-              const isSelected = selectedDepartmentId === dept.id;
-              const isExpanded = expandedDeptIds.includes(dept.id);
-              const deptPolicies = allAvailablePolicies.filter(p => p.department_id === dept.id);
+            {/* PRIMARY ACTIVE CATEGORIES WITH EXPANDABLE HIERARCHY */}
+            <div className="space-y-1">
+              {displayedPrimary.map((dept) => {
+                const isSelected = selectedDepartmentId === dept.id;
+                const isExpanded = expandedDeptIds.includes(dept.id);
+                const deptPolicies = allAvailablePolicies.filter(p => p.department_id === dept.id);
 
-              return (
-                <div key={dept.id} className="space-y-0.5">
-                  <div
-                    className={`group relative flex items-center justify-between rounded-lg px-2.5 py-1.5 transition-colors cursor-pointer ${
-                      isSelected 
-                        ? 'bg-[#0057B8]/10 text-[#0057B8] font-semibold border-l-2 border-[#0057B8] shadow-2xs' 
-                        : 'hover:bg-slate-100/80 text-slate-700'
-                    }`}
-                    onClick={() => {
-                      onSelectDepartment(dept.id);
-                      toggleDeptExpand(dept.id);
-                    }}
-                  >
-                    {/* Left side: Drag handle, Chevron, Icon, Name */}
-                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                      <span className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 transition cursor-grab flex-shrink-0">
-                        <GripVertical className="w-3 h-3" />
-                      </span>
-                      
-                      {/* Chevron Clickable Toggle */}
-                      <button
-                        type="button"
-                        onClick={(e) => toggleDeptExpand(dept.id, e)}
-                        className="text-slate-400 hover:text-slate-700 transition flex-shrink-0 p-0.5 rounded hover:bg-slate-300/40"
-                        title={isExpanded ? "Collapse hierarchy" : "Expand hierarchy"}
-                      >
-                        <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-150 ${isExpanded ? 'rotate-90 text-slate-800' : ''}`} />
-                      </button>
+                return (
+                  <div key={dept.id} className="space-y-0.5">
+                    <div
+                      className={`group relative flex items-center justify-between rounded-lg px-2.5 py-1.5 transition-colors cursor-pointer ${
+                        isSelected 
+                          ? 'bg-[#0057B8]/10 text-[#0057B8] font-semibold border-l-2 border-[#0057B8] shadow-2xs' 
+                          : 'hover:bg-slate-100/80 text-slate-700'
+                      }`}
+                      onClick={() => {
+                        onSelectDepartment(dept.id);
+                        toggleDeptExpand(dept.id);
+                      }}
+                    >
+                      {/* Left side: Chevron, Icon, Name */}
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        {/* Chevron Clickable Toggle */}
+                        <button
+                          type="button"
+                          onClick={(e) => toggleDeptExpand(dept.id, e)}
+                          className="text-slate-400 hover:text-slate-700 transition flex-shrink-0 p-0.5 rounded hover:bg-slate-300/40"
+                          title={isExpanded ? "Collapse hierarchy" : "Expand hierarchy"}
+                        >
+                          <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-150 ${isExpanded ? 'rotate-90 text-slate-800' : ''}`} />
+                        </button>
 
-                      <div className="flex-shrink-0">
-                        {getDeptIcon(dept.icon, `w-3.5 h-3.5 ${isSelected ? 'text-slate-900' : 'text-slate-600'}`)}
+                        <div className="flex-shrink-0">
+                          {getDeptIcon(dept.icon, `w-3.5 h-3.5 ${isSelected ? 'text-slate-900' : 'text-slate-600'}`)}
+                        </div>
+
+                        <span className="truncate text-[12px] tracking-tight">
+                          {dept.name}
+                        </span>
                       </div>
 
-                      <span className="truncate text-[12.5px] tracking-tight">
-                        {dept.name}
-                      </span>
-                    </div>
+                      {/* Right side: Clean Count and Directly Visible '+' button */}
+                      <div className="flex items-center gap-1 flex-shrink-0 ml-1">
+                        <span className={`text-[11px] font-medium px-1.5 py-0.2 rounded ${
+                          isSelected 
+                            ? 'bg-white text-slate-800 shadow-2xs' 
+                            : 'text-slate-500 bg-slate-200/50'
+                        }`}>
+                          {deptPolicies.length || dept.count || 0}
+                        </span>
 
-                    {/* Right side: Clean Neutral Count and Hover '+' button with Tooltip */}
-                    <div className="flex items-center gap-1 flex-shrink-0 ml-1">
-                      <span className={`text-[11.5px] font-medium px-1.5 py-0.5 rounded ${
-                        isSelected 
-                          ? 'bg-white text-slate-800 shadow-2xs' 
-                          : 'text-slate-500 bg-slate-200/50'
-                      }`}>
-                        {Math.max(deptPolicies.length, dept.count || 0)}
-                      </span>
-
-                      {/* Hover + button with Tooltip */}
-                      {canCreateDocument && (
-                        <div className="relative group/add">
+                        {canCreateDocument && (
                           <button
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               if (onOpenAddPolicyModal) onOpenAddPolicyModal(dept.id, dept.name);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-300/60 text-slate-600 hover:text-slate-900 rounded transition cursor-pointer"
+                            className="p-1 hover:bg-blue-100 text-slate-500 hover:text-[#0057B8] rounded transition cursor-pointer flex items-center justify-center"
                             title={`Add policy to ${dept.name}`}
                             aria-label={`Add to ${dept.name}`}
                           >
                             <Plus className="w-3 h-3" />
                           </button>
-
-                          <div className="absolute right-0 top-full mt-1 hidden group-hover/add:block z-50 whitespace-nowrap bg-slate-900 text-white text-[10.5px] font-medium px-2 py-0.5 rounded shadow-md pointer-events-none animate-in fade-in duration-100">
-                            + Add Policy
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* CHILD POLICIES EXPANDED UNDERNEATH DEPARTMENT */}
-                  {isExpanded && (
-                    <div className="ml-5 pl-2.5 border-l border-slate-300/70 my-1 space-y-1 animate-in fade-in duration-150">
-                      {deptPolicies.length === 0 ? (
-                        <div className="py-1 px-2 text-[11px] text-slate-400 italic flex items-center justify-between bg-slate-50/50 rounded">
-                          <span>No policies authored</span>
-                          {canCreateDocument && (
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onOpenAddPolicyModal) onOpenAddPolicyModal(dept.id, dept.name);
-                              }}
-                              className="text-slate-700 hover:text-slate-900 font-semibold text-[10.5px] underline cursor-pointer"
-                            >
-                              + Add
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        deptPolicies.map(pol => {
-                          const isPolSelected = selectedPolicyId === pol.id;
-                          return (
-                            <div
-                              key={pol.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onSelectPolicy) onSelectPolicy(pol.id);
-                              }}
-                              className={`group/pol flex items-center justify-between py-1.5 px-2 rounded-md text-[12px] transition cursor-pointer ${
-                                isPolSelected
-                                  ? 'bg-[#0057B8] text-white font-medium shadow-primary-sm'
-                                  : 'text-slate-700 hover:bg-slate-200/60'
-                              }`}
-                              title={pol.title}
-                            >
-                              <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                {pol.is_product ? (
-                                  <CreditCard className={`w-3 h-3 flex-shrink-0 ${isPolSelected ? 'text-amber-300' : 'text-blue-600'}`} />
-                                ) : (
-                                  <FileText className={`w-3 h-3 flex-shrink-0 ${isPolSelected ? 'text-slate-200' : 'text-slate-400 group-hover/pol:text-slate-600'}`} />
-                                )}
-                                <span className="truncate tracking-tight">{pol.title}</span>
-                              </div>
-                              <div className="flex items-center gap-1 flex-shrink-0 ml-1">
-                                {pol.is_product && (
-                                  <span className={`text-[8.5px] font-bold px-1 py-0.2 rounded uppercase ${
-                                    isPolSelected ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-blue-50 text-blue-700 border border-blue-200'
-                                  }`}>
-                                    Product
-                                  </span>
-                                )}
-                                <span className={`text-[9.5px] font-mono px-1 py-0.2 rounded ${
-                                  isPolSelected ? 'bg-slate-800 text-slate-300' : 'bg-slate-200/60 text-slate-500'
-                                }`}>
-                                  v{pol.version || '1.0'}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* COLLAPSIBLE / EXPANDABLE SECTION FOR THE 10+ ZERO-COUNT CATEGORIES */}
-          {displayedOther.length > 0 && (
-            <div className="pt-2 border-t border-slate-200/70 mt-2">
-              <button
-                onClick={() => setShowOtherCategories(!showOtherCategories)}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100/60 rounded-md transition cursor-pointer"
-              >
-                <span className="flex items-center gap-1.5">
-                  <ChevronRight className={`w-3 h-3 transition-transform text-slate-400 ${showOtherCategories ? 'rotate-90 text-slate-700' : ''}`} />
-                  <span>Other Library Partitions</span>
-                </span>
-                <span className="text-[10px] bg-slate-200/60 text-slate-500 px-1.5 py-0.2 rounded font-mono">
-                  +{displayedOther.length}
-                </span>
-              </button>
-
-              {showOtherCategories && (
-                <div className="mt-1 space-y-0.5 pl-2 border-l border-slate-200 ml-3">
-                  {displayedOther.map((dept) => {
-                    const isSelected = selectedDepartmentId === dept.id;
-                    const isExpanded = expandedDeptIds.includes(dept.id);
-                    const deptPolicies = allAvailablePolicies.filter(p => p.department_id === dept.id);
-
-                    return (
-                      <div key={dept.id} className="space-y-0.5">
-                        <div
-                          className={`group relative flex items-center justify-between rounded-md px-2 py-1 transition-colors cursor-pointer ${
-                            isSelected 
-                              ? 'bg-slate-200/70 text-slate-900 font-semibold' 
-                              : 'hover:bg-slate-100/60 text-slate-600'
-                          }`}
-                          onClick={() => {
-                            onSelectDepartment(dept.id);
-                            toggleDeptExpand(dept.id);
-                          }}
-                        >
-                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                            <button
-                              type="button"
-                              onClick={(e) => toggleDeptExpand(dept.id, e)}
-                              className="text-slate-400 hover:text-slate-700 transition p-0.5 rounded"
-                            >
-                              <ChevronRight className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90 text-slate-700' : ''}`} />
-                            </button>
-                            <div className="flex-shrink-0">
-                              {getDeptIcon(dept.icon, "w-3 h-3 text-slate-400 group-hover:text-slate-600")}
-                            </div>
-                            <span className="truncate text-[12px] text-slate-600 group-hover:text-slate-800">
-                              {dept.name}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            <span className="text-[10.5px] text-slate-400">
-                              {deptPolicies.length}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onOpenAddPolicyModal) onOpenAddPolicyModal(dept.id, dept.name);
-                              }}
-                              className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-slate-200 text-slate-500 hover:text-slate-800 rounded transition"
-                              title={`Create initial policy for ${dept.name}`}
-                            >
-                              <Plus className="w-2.5 h-2.5" />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Child policies in other categories if any */}
-                        {isExpanded && (
-                          <div className="ml-4 pl-2 border-l border-slate-200 my-0.5 space-y-0.5">
-                            {deptPolicies.length === 0 ? (
-                              <p className="text-[10.5px] text-slate-400 italic py-0.5">No policies</p>
-                            ) : (
-                              deptPolicies.map(pol => (
-                                <div
-                                  key={pol.id}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (onSelectPolicy) onSelectPolicy(pol.id);
-                                  }}
-                                  className={`py-1 px-1.5 rounded text-[11px] truncate cursor-pointer ${
-                                    selectedPolicyId === pol.id ? 'bg-[#0057B8] text-white font-medium shadow-2xs' : 'text-slate-600 hover:bg-slate-200'
-                                  }`}
-                                >
-                                  {pol.title}
-                                </div>
-                              ))
-                            )}
-                          </div>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                    </div>
+
+                    {/* CHILD POLICIES EXPANDED UNDERNEATH DEPARTMENT */}
+                    {isExpanded && (
+                      <div className="ml-5 pl-2.5 border-l border-slate-300/70 my-1 space-y-1 animate-in fade-in duration-150">
+                        {deptPolicies.length === 0 ? (
+                          <div className="py-1 px-2 text-[11px] text-slate-400 italic flex items-center justify-between bg-slate-50/50 rounded">
+                            <span>No policies authored</span>
+                            {canCreateDocument && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (onOpenAddPolicyModal) onOpenAddPolicyModal(dept.id, dept.name);
+                                }}
+                                className="text-slate-700 hover:text-slate-900 font-semibold text-[10.5px] underline cursor-pointer"
+                              >
+                                + Add
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          deptPolicies.map(pol => {
+                            const isPolSelected = selectedPolicyId === pol.id;
+                            const isPinnedPol = pinnedPolicyIds.includes(pol.id);
+
+                            return (
+                              <div
+                                key={pol.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (onSelectPolicy) onSelectPolicy(pol.id);
+                                }}
+                                onContextMenu={(e) => handleContextMenu(pol.id, e)}
+                                className={`group/pol flex items-center justify-between py-1 px-2 rounded-md text-[11.5px] transition cursor-pointer ${
+                                  isPolSelected
+                                    ? 'bg-[#0057B8] text-white font-medium shadow-primary-sm'
+                                    : 'text-slate-700 hover:bg-slate-200/60'
+                                }`}
+                                title={`${pol.title} (Right-click or click pin to toggle)`}
+                              >
+                                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                  {pol.is_product ? (
+                                    <CreditCard className={`w-3 h-3 flex-shrink-0 ${isPolSelected ? 'text-amber-300' : 'text-blue-600'}`} />
+                                  ) : (
+                                    <FileText className={`w-3 h-3 flex-shrink-0 ${isPolSelected ? 'text-slate-200' : 'text-slate-400 group-hover/pol:text-slate-600'}`} />
+                                  )}
+                                  <span className="truncate tracking-tight">{pol.title}</span>
+                                </div>
+                                <div className="flex items-center gap-1 flex-shrink-0 ml-1">
+                                  <button
+                                    onClick={(e) => handleTogglePin(pol.id, e)}
+                                    title={isPinnedPol ? "Unpin library" : "Pin library"}
+                                    className={`p-0.5 rounded transition cursor-pointer ${
+                                      isPolSelected 
+                                        ? 'text-blue-200 hover:text-white' 
+                                        : isPinnedPol ? 'text-amber-500' : 'text-slate-300 hover:text-[#0057B8]'
+                                    }`}
+                                  >
+                                    <Pin className={`w-2.5 h-2.5 ${isPinnedPol ? 'fill-current' : ''}`} />
+                                  </button>
+                                  <span className={`text-[9.5px] font-mono px-1 py-0.2 rounded ${
+                                    isPolSelected ? 'bg-slate-800 text-slate-300' : 'bg-slate-200/60 text-slate-500'
+                                  }`}>
+                                    v{pol.version || '1.0'}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          )}
+
+            {/* COLLAPSIBLE SECTION FOR OTHER ZERO-COUNT CATEGORIES */}
+            {displayedOther.length > 0 && (
+              <div className="pt-2 border-t border-slate-200/70 mt-2">
+                <button
+                  onClick={() => setShowOtherCategories(!showOtherCategories)}
+                  className="w-full flex items-center justify-between px-2.5 py-1 text-[11.5px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100/60 rounded-md transition cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <ChevronRight className={`w-3 h-3 transition-transform text-slate-400 ${showOtherCategories ? 'rotate-90 text-slate-700' : ''}`} />
+                    <span>Other Library Partitions</span>
+                  </span>
+                  <span className="text-[10px] bg-slate-200/60 text-slate-500 px-1.5 py-0.2 rounded font-mono">
+                    +{displayedOther.length}
+                  </span>
+                </button>
+
+                {showOtherCategories && (
+                  <div className="mt-1 space-y-0.5 pl-2 border-l border-slate-300/60">
+                    {displayedOther.map(dept => (
+                      <div
+                        key={dept.id}
+                        onClick={() => onSelectDepartment(dept.id)}
+                        className="flex items-center justify-between px-2 py-1 text-[11px] text-slate-600 hover:bg-slate-200/50 rounded cursor-pointer"
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          {getDeptIcon(dept.icon, "w-3 h-3 text-slate-400")}
+                          <span className="truncate">{dept.name}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">0</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
         </div>
 
-        {/* Dynamic + Add Section / Partition Button with Prominent Blue Border */}
-        <div className="p-2.5 border-t border-[#e2e8f0] bg-[#f8fafc]">
-          <button
-            onClick={() => {
-              if (!canCreateDocument) {
-                alert("Access Restricted: Partition creation rights have been restricted for your account by Department Manager Marcus Vance.");
-                return;
-              }
-              setIsAddDeptModalOpen(true);
-            }}
-            className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border-2 transition cursor-pointer shadow-xs text-[12.5px] font-bold ${
-              canCreateDocument
-                ? 'border-[#0057B8]/40 hover:border-[#0057B8] bg-white hover:bg-blue-50/70 text-[#0057B8] hover:shadow-primary-sm active:scale-98'
-                : 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed'
-            }`}
-            title={canCreateDocument ? "Add new section partition" : "Partition creation restricted by Manager"}
-          >
-            {canCreateDocument ? <Plus className="w-3.5 h-3.5 text-[#0057B8]" /> : <Lock className="w-3.5 h-3.5 text-slate-400" />}
-            <span>{canCreateDocument ? '+ Add Section / Partition' : 'Partition Authoring Restricted'}</span>
-          </button>
-        </div>
-
-        {/* Add Section Partition Modal */}
-        {isAddDeptModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-xs p-4">
-            <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-5 w-full max-w-sm">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-bold text-slate-900">Create Library Group Partition</h3>
+        {/* TASK LIST MODAL */}
+        {isTaskModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 w-full max-w-lg space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0057B8] flex items-center justify-center font-bold">
+                    <ListChecks className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Liblist Tasks & Assignments</h3>
+                    <p className="text-[11px] text-slate-500">Manage, reassign, and track regulatory compliance tasks</p>
+                  </div>
+                </div>
                 <button 
-                  onClick={() => setIsAddDeptModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-600"
+                  onClick={() => setIsTaskModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-[12px] text-slate-500 mb-4">
-                Creates a new section partition in the repository with audit change tracking.
-              </p>
-              <form onSubmit={handleCreateDepartment} className="space-y-3">
-                <div>
-                  <label className="block text-[12px] font-semibold text-slate-700 mb-1">Partition Name</label>
-                  <input
-                    type="text"
-                    value={newDeptName}
-                    onChange={(e) => setNewDeptName(e.target.value)}
-                    placeholder="e.g. Treasury Operations"
-                    required
-                    autoFocus
-                    className="w-full text-xs p-2 rounded-lg border border-slate-300 focus:outline-none focus:border-slate-500"
-                  />
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsAddDeptModalOpen(false)}
-                    className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCreatingDept}
-                    className="px-4 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-xs transition"
-                  >
-                    {isCreatingDept ? 'Creating...' : 'Create Partition'}
-                  </button>
-                </div>
-              </form>
+
+              {/* Task Table */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden">
+                <table className="w-full text-left text-[11.5px]">
+                  <thead className="bg-slate-50 text-slate-500 uppercase font-semibold text-[10px] tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th className="p-2.5">Status</th>
+                      <th className="p-2.5">Task ID</th>
+                      <th className="p-2.5">Assigned</th>
+                      <th className="p-2.5">Description</th>
+                      <th className="p-2.5 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {tasks.map(task => (
+                      <tr key={task.id} className="hover:bg-slate-50/80">
+                        <td className="p-2.5">
+                          <input 
+                            type="checkbox" 
+                            checked={task.completed} 
+                            onChange={() => {
+                              setTasks(prev => prev.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t));
+                            }}
+                            className="rounded border-slate-300 text-[#0057B8] focus:ring-0 cursor-pointer" 
+                          />
+                        </td>
+                        <td className="p-2.5 font-mono font-bold text-[#0057B8]">{task.id}</td>
+                        <td className="p-2.5">
+                          <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded font-mono text-[10px] border border-purple-200">
+                            {task.assigned}
+                          </span>
+                        </td>
+                        <td className="p-2.5 text-slate-700 font-normal">{task.desc}</td>
+                        <td className="p-2.5 text-right">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            task.status === 'Completed'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : task.status === 'Reassigned'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-blue-50 text-blue-700 border border-blue-200'
+                          }`}>
+                            {task.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsTaskModalOpen(false)}
+                  className="px-4 py-1.5 text-xs font-semibold text-white bg-[#0057B8] hover:bg-blue-700 rounded-lg shadow-xs transition cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}

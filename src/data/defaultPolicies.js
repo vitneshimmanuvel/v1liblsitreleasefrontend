@@ -11,10 +11,10 @@ export const DEFAULT_POLICIES = [
     version: '1.2',
     status: 'active',
     is_masked: false,
-    content: `### 1. Purpose & Product Scope
+    content: `1. Purpose & Product Scope
 This master product policy outlines the mandatory criteria, authorization limits, and direct in-system operational documents for underwriting, approving, and activating consumer credit cards for Commonwealth Bank of Australia (CBA).
 
-### 2. Operational Rules & Mandatory Verifications
+2. Operational Rules & Mandatory Verifications
 1. **Applicant Eligibility**: Minimum age 18 years, Australian resident, minimum ongoing gross income of $35,000 per annum.
 2. **Comprehensive Credit Check**: Credit report verification via Equifax. Applications with credit scores below 620 require supervisory review.
 3. **Identity Verification (KYC)**: Biometric digital ID or 100-point physical verification before card issuance.
@@ -23,7 +23,7 @@ This master product policy outlines the mandatory criteria, authorization limits
    - Tier 2 Gold/Platinum Card: Up to $15,000 (Requires Credit Officer sign-off).
    - Tier 3 Diamond / Executive: Up to $50,000 (Requires Department Manager approval).
 
-### 3. Turnaround SLA & Compliance Monitoring
+3. Turnaround SLA & Compliance Monitoring
 All standard consumer applications must be adjudicated within 24 hours of document submission. Escalated applications must resolve within 48 business hours.`,
     parameters: {
       approval_limits: {
@@ -81,10 +81,10 @@ All standard consumer applications must be adjudicated within 24 hours of docume
     version: '1.1',
     status: 'active',
     is_masked: false,
-    content: `### 1. Card Activation & Tokenization
+    content: `1. Card Activation & Tokenization
 Governs instant card provisioning into Apple Wallet, Google Pay, and physical chip card PIN generation.
 
-### 2. Revolving Credit Facility Guidelines
+2. Revolving Credit Facility Guidelines
 1. **Automated Risk Monitoring**: Daily review of revolving credit utilization (>85% triggers early warning flags).
 2. **Limit Increase Requests**: Require 6 months on-time payment track record before eligibility.
 3. **Emergency Limit Blocks**: Suspicious transactions trigger automated SMS confirmation and transient card lock.`,
@@ -114,10 +114,10 @@ Governs instant card provisioning into Apple Wallet, Google Pay, and physical ch
     version: '1.1',
     status: 'active',
     is_masked: false,
-    content: `### 1. Underwriting Principles
+    content: `1. Underwriting Principles
 Governs credit assessment for unsecured personal loans up to $75,000 AUD, vehicle loans, and overdraft limits across retail branch networks.
 
-### 2. Key Criteria
+2. Key Criteria
 1. **Employment Stability**: Minimum 6 months continuous employment with current employer.
 2. **Debt-to-Income (DTI)**: Maximum aggregate DTI of 6.0x across all credit liabilities.
 3. **HEM Benchmark**: Living expense verification comparing declared customer expenses against Household Expenditure Measure (HEM).`,
@@ -147,10 +147,10 @@ Governs credit assessment for unsecured personal loans up to $75,000 AUD, vehicl
     version: '2.0',
     status: 'active',
     is_masked: false,
-    content: `### 1. Scope & Prudential Mandate
+    content: `1. Scope & Prudential Mandate
 Applies to all retail mortgage originations across branch, online, and broker channels adhering to APRA APS 220 credit risk standards.
 
-### 2. Mandatory Underwriting Thresholds
+2. Mandatory Underwriting Thresholds
 1. **Serviceability Buffer**: Mandatory minimum +3.00% interest rate buffer applied over the standard variable rate.
 2. **Loan-to-Value Ratio (LVR)**: LVR exceeding 80% requires Lenders Mortgage Insurance (LMI) validation.
 3. **Genuine Savings**: Minimum 5% verified genuine savings held for at least 3 continuous months.`,
@@ -182,10 +182,10 @@ Applies to all retail mortgage originations across branch, online, and broker ch
     version: '1.0',
     status: 'active',
     is_masked: false,
-    content: `### 1. Overview
+    content: `1. Overview
 Ensures frictionless retail account opening while maintaining strict compliance with AUSTRAC customer identification and AML/CTF standards.
 
-### 2. Verification Flow
+2. Verification Flow
 1. **Document Verification**: Real-time cross-match against Australian Document Verification Service (DVS) for Passport or Driver Licence.
 2. **Biometric Face Match**: Active liveness detection score >= 92%.
 3. **PEP & Sanctions**: Instantaneous screening against DFAT and international sanctions databases.`,
@@ -213,10 +213,10 @@ Ensures frictionless retail account opening while maintaining strict compliance 
     version: '1.3',
     status: 'active',
     is_masked: false,
-    content: `### 1. Corporate Customer Due Diligence
+    content: `1. Corporate Customer Due Diligence
 Mandatory verification steps before activating commercial deposit or merchant accounts for Australian registered entities.
 
-### 2. Governance Requirements
+2. Governance Requirements
 1. **ASIC Validation**: Live extract confirming company status, registered office, and current directors.
 2. **Beneficial Ownership (UBO)**: Identification of all natural persons holding 25% or more equity or effective control.
 3. **Signatory Mandate**: Formal board resolution authorizing named operators.`,
@@ -246,7 +246,7 @@ Mandatory verification steps before activating commercial deposit or merchant ac
     version: '1.1',
     status: 'active',
     is_masked: false,
-    content: `### 1. Mandatory Controls
+    content: `1. Mandatory Controls
 1. **VPN & Encryption**: All remote access must route through Commonwealth Bank enterprise VPN with TLS 1.3 encryption.
 2. **Multi-Factor Authentication**: Hardware FIDO2 token or enterprise push notification with number matching required on every session.
 3. **Session Lock**: Workstations must enforce automatic screen lock after 5 minutes of inactivity.`,
@@ -274,10 +274,10 @@ Mandatory verification steps before activating commercial deposit or merchant ac
     version: '2.0',
     status: 'active',
     is_masked: false,
-    content: `### 1. Scope
+    content: `1. Scope
 Applies to all database administrators, cloud infrastructure operators, and core banking systems engineers.
 
-### 2. Safeguards
+2. Safeguards
 1. **Just-In-Time Elevation**: Elevated rights expire after a maximum 4-hour lease window.
 2. **Dual Approval**: Production modifications require secondary approver sign-off.
 3. **Audit Logging**: All privileged terminal sessions are keystroke-indexed and cryptographically hashed.`,
@@ -307,10 +307,10 @@ Applies to all database administrators, cloud infrastructure operators, and core
     version: '2.1',
     status: 'active',
     is_masked: false,
-    content: `### 1. AUSTRAC Regulatory Reporting
+    content: `1. AUSTRAC Regulatory Reporting
 Mandatory compliance standards aligned with the Anti-Money Laundering and Counter-Terrorism Financing Act 2006.
 
-### 2. Operational Obligations
+2. Operational Obligations
 1. **Threshold Transaction Reports (TTR)**: Cash transfers >= $10,000 AUD reported within 10 business days.
 2. **Suspicious Matter Reports (SMR)**: Suspicious activity notifications submitted within 24 hours (terrorism financing) or 3 business days (money laundering).
 3. **Automated Sanctions Filtering**: Real-time screening of inbound and outbound SWIFT / NPP payments against DFAT lists.`,
@@ -338,10 +338,10 @@ Mandatory compliance standards aligned with the Anti-Money Laundering and Counte
     version: '1.4',
     status: 'active',
     is_masked: false,
-    content: `### 1. Open Banking Framework
+    content: `1. Open Banking Framework
 Governs secure customer-directed sharing of banking transaction data with Accredited Data Recipients (ADRs) under the Consumer Data Right.
 
-### 2. Rules & Governance
+2. Rules & Governance
 1. **Consent Management**: Explicit, unbundled, time-limited consumer consents.
 2. **Instant Revocation**: Ability for customers to revoke data-sharing access in single click via mobile banking app.
 3. **Data Redaction**: Strict masking of joint account non-consenting parties' details.`,

@@ -237,6 +237,29 @@ export default function AdminDashboard({
     // Fallback if AI call errors
     setIsScanningWithAI(false);
     setAiScanStep(4);
+    const isVal = uploadFile.name.toLowerCase().includes('valuation') || uploadFile.name.toLowerCase().includes('hl_');
+    if (isVal) {
+      setNewStandard({
+        title: 'Home Loan Valuations Policy',
+        code: 'APRA APS 220',
+        domain: 'Retail Lending & Mortgages',
+        version: 'v1.0.0',
+        vision: 'Consistent and prudent framework for the valuation of residential properties used as security for home loans to assess lending risk and comply with APRA regulatory requirements.',
+        clauses: [
+          { id: 'VAL-01', title: '4 Approved Methods: Full Valuation (90d), Desktop (90d), AVM (30d), Drive-thru/Kerbside' },
+          { id: 'VAL-02', title: 'Valuation Principles: Independence from borrower/broker, Objectivity, and Accuracy' },
+          { id: 'VAL-03', title: 'Prudence Rule: Lending decisions strictly based on Lower of Purchase Price or Assessed Market Value' },
+          { id: 'VAL-04', title: 'Governance: Panel Valuers Accreditation Policy and Standard Operating Procedure for Report Filing' }
+        ],
+        telemetry: [
+          { metric: 'Validity SLA', target: '90 Days (Full/Desktop), 30 Days (AVM)' },
+          { metric: 'Prudence Rule', target: 'Lower of Purchase Price or Market Value' },
+          { metric: 'Officer Cap', target: '$2,000,000 AUD (Delegated Authority)' }
+        ]
+      });
+      return;
+    }
+
     const cleanName = uploadFile.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, ' ');
     setNewStandard({
       title: `${cleanName.charAt(0).toUpperCase() + cleanName.slice(1)} Operational Standard`,

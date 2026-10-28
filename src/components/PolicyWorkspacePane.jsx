@@ -29,6 +29,109 @@ import {
 import { apiService } from '../services/apiService';
 import { DEFAULT_POLICIES } from '../data/defaultPolicies';
 
+// Clean Formatted Content Renderer: Removes raw markdown hashes, strips unnecessary asterisks, filters out empty points, renders compact enterprise typography
+function FormattedPolicyContent({ content }) {
+  if (!content) return null;
+
+  // Split content into clean lines
+  const rawLines = content.split('\n');
+  const sections = [];
+  let currentSection = { title: '', items: [] };
+
+  for (let i = 0; i < rawLines.length; i++) {
+    let line = rawLines[i].trim();
+    if (!line) continue;
+
+    // Filter out unwanted empty points or stray punctuation
+    if (line === '-' || line === '•' || line === '*' || line === '.' || line === ':') {
+      continue;
+    }
+
+    // Check for section headers (###, ##, #)
+    if (/^#{1,6}\s+/.test(line)) {
+      if (currentSection.title || currentSection.items.length > 0) {
+        sections.push(currentSection);
+      }
+      const cleanTitle = line.replace(/^#{1,6}\s*/, '').trim();
+      currentSection = { title: cleanTitle, items: [] };
+      continue;
+    }
+
+    // Clean internal markdown hashes if any exist
+    line = line.replace(/###/g, '').replace(/##/g, '').replace(/^#\s*/, '').trim();
+
+    currentSection.items.push(line);
+  }
+
+  if (currentSection.title || currentSection.items.length > 0) {
+    sections.push(currentSection);
+  }
+
+  return (
+    <div className="space-y-3.5 pt-1 text-[12.5px] leading-relaxed">
+      {sections.map((sec, sIdx) => (
+        <div key={sIdx} className="space-y-1.5">
+          {sec.title && (
+            <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0057B8]" />
+              <h4 className="text-[12.5px] font-bold text-slate-900 tracking-tight">
+                {sec.title}
+              </h4>
+            </div>
+          )}
+
+          <div className="space-y-1.5 pl-2.5 border-l-2 border-blue-100/80">
+            {sec.items.map((item, iIdx) => {
+              // Check if bullet point or numbered item
+              const bulletMatch = item.match(/^(\d+\.|\*|-|•)\s*(.*)/);
+              if (bulletMatch) {
+                const bulletNum = bulletMatch[1];
+                let text = bulletMatch[2].trim();
+                // Filter out unwanted extra empty points
+                if (!text || text === '-' || text === '•' || text === '.') return null;
+
+                // Check for bold title like **Title**: Body or Title: Body
+                const boldMatch = text.match(/^\*\*(.*?)\*\*(?::\s*|\s*-\s*|\s*)(.*)/) || text.match(/^([A-Za-z0-9\s()/-]{3,40}):\s*(.*)/);
+                if (boldMatch) {
+                  const boldTitle = boldMatch[1].replace(/\*\*/g, '').trim();
+                  const body = boldMatch[2].replace(/\*\*/g, '').trim();
+                  return (
+                    <div key={iIdx} className="flex items-start gap-2 py-0.5">
+                      <span className="text-[11px] font-mono font-bold text-[#0057B8] shrink-0 mt-0.5">
+                        {bulletNum}
+                      </span>
+                      <div className="text-slate-700 leading-relaxed">
+                        <strong className="font-semibold text-slate-900">{boldTitle}: </strong>
+                        <span>{body}</span>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={iIdx} className="flex items-start gap-2 py-0.5">
+                    <span className="text-[11px] font-mono font-bold text-[#0057B8] shrink-0 mt-0.5">
+                      {bulletNum}
+                    </span>
+                    <span className="text-slate-700 leading-relaxed">{text.replace(/\*\*/g, '')}</span>
+                  </div>
+                );
+              }
+
+              // Normal text line
+              return (
+                <p key={iIdx} className="text-slate-600 font-normal leading-relaxed">
+                  {item.replace(/\*\*/g, '')}
+                </p>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function PolicyWorkspacePane({
   policy,
   currentUser,
@@ -267,13 +370,13 @@ export default function PolicyWorkspacePane({
 
         {/* Policy Document Title */}
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#111827] tracking-tight">
             {detailedPolicy.title}
           </h1>
-          <p className="text-[14.5px] text-[#4b5563] mt-1.5 font-normal leading-relaxed">
+          <p className="text-[13px] text-[#4b5563] mt-1 font-normal leading-relaxed">
             {detailedPolicy.summary}
           </p>
-          <div className="flex flex-wrap items-center gap-5 text-[12px] text-slate-500 pt-2">
+          <div className="flex flex-wrap items-center gap-4 text-[11.5px] text-slate-500 pt-1.5">
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-slate-400" /> Updated: {new Date(detailedPolicy.updated_at || Date.now()).toLocaleDateString()}
             </span>
@@ -287,18 +390,16 @@ export default function PolicyWorkspacePane({
         </div>
 
         {/* Detailed Clauses Content Box */}
-        <div className="p-6 rounded-xl border border-[#e5e7eb] bg-white space-y-3 shadow-2xs">
+        <div className="p-5 rounded-xl border border-[#e5e7eb] bg-white space-y-3 shadow-2xs">
           <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-2">
-            <h3 className="text-sm font-bold text-[#111827] flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-600" />
-              Detailed Library Info (in the context of library group)
+            <h3 className="text-xs font-bold text-[#111827] uppercase tracking-wider flex items-center gap-2">
+              <FileText className="w-4 h-4 text-[#0057B8]" />
+              Detailed Library Info
             </h3>
-            <span className="text-[11px] text-slate-400 font-mono">CORE SPECIFICATION</span>
+            <span className="text-[10.5px] text-slate-400 font-mono">CORE SPECIFICATION</span>
           </div>
 
-            <div className="text-[13.5px] text-slate-700 leading-relaxed space-y-3 font-normal whitespace-pre-line pt-1">
-              {detailedPolicy.content}
-            </div>
+          <FormattedPolicyContent content={detailedPolicy.content} />
 
             {/* DIRECT IN-SYSTEM DOCUMENTS (IF THIS IS A MASTER PRODUCT POLICY) */}
             {activeDoc.direct_documents && activeDoc.direct_documents.length > 0 && (
