@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FileEdit, 
-  Clock, 
   Lock, 
   Unlock, 
   History, 
-  User, 
-  Building2, 
   FileText,
   GraduationCap,
   FileCheck,
@@ -312,10 +309,10 @@ export default function PolicyWorkspacePane({
   const faqItems = artifacts.filter(a => a.tab_type === 'faqs');
 
   return (
-    <main className="flex-1 flex flex-col h-full overflow-y-auto bg-[#f0f4f9] custom-scrollbar select-none text-slate-800">
+    <main className="flex-1 flex flex-col h-full overflow-y-auto bg-[#f0f4f9] p-5 sm:p-7 space-y-5 custom-scrollbar select-none text-slate-800">
       
-      {/* ----------------- SECTION 1: DETAILED LIBRARY INFO (TOP) ----------------- */}
-      <div className="p-6 sm:p-8 border-b border-[#dbe4ef] bg-white space-y-5">
+      {/* ----------------- TOP SEPARATE CARD: DOCUMENT HEADER & ACTIONS ----------------- */}
+      <div className="p-5 sm:p-6 rounded-2xl border border-slate-200/90 bg-white shadow-2xs space-y-3.5">
         
         {/* Breadcrumb & Action Toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -352,52 +349,52 @@ export default function PolicyWorkspacePane({
               </div>
             )}
 
-            {/* [Active / Inactive] Toggle Button (Safe Archiving) */}
-            <button
-              onClick={() => onToggleStatus(detailedPolicy.id, isActive ? 'inactive' : 'active')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition cursor-pointer ${
-                isActive
-                  ? 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300'
-                  : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
-              }`}
-              title="Toggle between Active enforcement and Safe Archive"
-            >
-              <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
-              <span>{isActive ? 'Active' : 'Archived'}</span>
-            </button>
+            {/* Draft Status Badge or [Active / Inactive] Toggle Button */}
+            {detailedPolicy.status === 'draft' ? (
+              <div 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12.5px] font-bold bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs"
+                title="Saved Draft - Not yet published as active policy"
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>Draft Policy</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => onToggleStatus(detailedPolicy.id, isActive ? 'inactive' : 'active')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition cursor-pointer ${
+                  isActive
+                    ? 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300'
+                    : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                }`}
+                title="Toggle between Active enforcement and Safe Archive"
+              >
+                <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                <span>{isActive ? 'Active' : 'Archived'}</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Policy Document Title */}
-        <div>
+        {/* Policy Document Title & Clean Summary */}
+        <div className="pt-0.5">
           <h1 className="text-xl sm:text-2xl font-bold text-[#111827] tracking-tight">
             {detailedPolicy.title}
           </h1>
-          <p className="text-[13px] text-[#4b5563] mt-1 font-normal leading-relaxed">
+          <p className="text-[13px] text-[#4b5563] mt-1.5 font-normal leading-relaxed">
             {detailedPolicy.summary}
           </p>
-          <div className="flex flex-wrap items-center gap-4 text-[11.5px] text-slate-500 pt-1.5">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-slate-400" /> Updated: {new Date(detailedPolicy.updated_at || Date.now()).toLocaleDateString()}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-slate-400" /> Author: {detailedPolicy.created_by || 'Department Authority'}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-slate-400" /> Institution: Commonwealth Bank of Australia
-            </span>
-          </div>
         </div>
+      </div>
 
-        {/* Detailed Clauses Content Box */}
-        <div className="p-5 rounded-xl border border-[#e5e7eb] bg-white space-y-3 shadow-2xs">
-          <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-2">
-            <h3 className="text-xs font-bold text-[#111827] uppercase tracking-wider flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#0057B8]" />
-              Detailed Library Info
-            </h3>
-            <span className="text-[10.5px] text-slate-400 font-mono">CORE SPECIFICATION</span>
-          </div>
+      {/* ----------------- SECTION 1: DETAILED LIBRARY INFO (MAIN CARD) ----------------- */}
+      <div className="p-5 sm:p-6 rounded-2xl border border-slate-200/90 bg-white space-y-4 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-2.5">
+          <h3 className="text-xs font-bold text-[#111827] uppercase tracking-wider flex items-center gap-2">
+            <FileText className="w-4 h-4 text-[#0057B8]" />
+            Detailed Library Info
+          </h3>
+          <span className="text-[10.5px] text-slate-400 font-mono">CORE SPECIFICATION</span>
+        </div>
 
           <FormattedPolicyContent content={detailedPolicy.content} />
 
@@ -784,10 +781,9 @@ export default function PolicyWorkspacePane({
               </div>
             </div>
           </div>
-      </div>
 
-      {/* ----------------- SECTION 2: SUPPLEMENTARY SECTION (BOTTOM) ----------------- */}
-      <div className="p-5 sm:p-6 bg-[#f0f4f9] space-y-4">
+      {/* ----------------- SECTION 2: SUPPLEMENTARY SECTION (BOTTOM CARD) ----------------- */}
+      <div className="p-5 sm:p-6 rounded-2xl border border-slate-200/90 bg-white space-y-4 shadow-2xs">
         
         {/* Supplementary Section Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#dbe4ef] pb-2.5">

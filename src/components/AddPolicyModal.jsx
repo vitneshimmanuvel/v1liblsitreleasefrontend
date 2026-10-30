@@ -17,9 +17,175 @@ import {
   Plus,
   AlignLeft,
   Layers,
-  Tag
+  Tag,
+  Maximize2,
+  Minimize2,
+  Save,
+  Info,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { apiService } from '../services/apiService';
+
+// 4 Institutional Banking Policy Templates (Clean & Concise)
+export const POLICY_TEMPLATES = [
+  {
+    id: 'template-01-pdf',
+    name: 'Template 1',
+    title: 'Policy Document',
+    dept: 'company-policies',
+    sla: '4 Hours',
+    daily: '$25,000 AUD',
+    cap: '$100,000 AUD',
+    summary: 'Standard banking policy framework covering applicability, detailed description, controls, dependencies, and reports.',
+    sections: [
+      {
+        id: 'sec-summary',
+        title: '1. Summary',
+        content: 'Summary section provides a gist of the policy. It covers what is this policy about, applicability. Prefer to limit this into maximum three paragraphs. It is ok to introduce key bullet points.',
+        type: 'section'
+      },
+      {
+        id: 'sec-details',
+        title: '2. Details',
+        content: 'Detailed section expand the summary comments. It can have multiple sub sections. It contains text, table, images. It would remain a long section. Contains underwriting rules, credit score benchmarks, and authorization limits.',
+        type: 'section'
+      },
+      {
+        id: 'sec-scope',
+        title: '3. Scope',
+        content: 'Scope describes applicability of the policy. It will list the functional areas where this policy is applied across retail branches, corporate governance, and consumer credit operations.',
+        type: 'section'
+      },
+      {
+        id: 'sec-controls',
+        title: '4. Controls',
+        content: 'Key control monitoring steps for proper implementation is to be defined. If no control activities are available, this section would show as "No control steps defined".',
+        type: 'section'
+      },
+      {
+        id: 'sec-dependencies',
+        title: '5. Dependencies',
+        content: 'This section covers any pre-requisite requirements, x-references to other policies, any regulatory references (APRA APS 220, CPS 234). Usually this is presented in a table or cross-reference list.',
+        type: 'section'
+      },
+      {
+        id: 'sec-reports',
+        title: '6. Reports',
+        content: 'Any predefined reports are shown in this section. User needs to map explicitly the report contents for this section to be display. Otherwise, user can only list the report id associated with this product (e.g. CBA-RPT-2026-01).',
+        type: 'section'
+      }
+    ]
+  },
+  {
+    id: 'template-02-exec',
+    name: 'Template 2',
+    title: 'Executive Summary',
+    dept: 'company-policies',
+    sla: '24 Hours',
+    daily: '$100,000 AUD',
+    cap: '$500,000 AUD',
+    summary: 'Executive governance charter setting forth board-level mandates, strategic risk tolerances, and delegated executive authority caps across business units.',
+    sections: [
+      {
+        id: 'sec-exec-purpose',
+        title: '1. Executive Summary & Statutory Purpose',
+        content: 'Outlines the overarching statutory intent, board governance expectations, and strategic compliance objectives under APRA CPS 230 and ASIC regulatory guidance.',
+        type: 'section'
+      },
+      {
+        id: 'sec-exec-delegations',
+        title: '2. Governance Framework & Delegated Authorities',
+        content: '1. Level 1 Credit Assessor: Discretionary sign-off authority up to $50,000 AUD.\n2. Level 2 Operations Manager: Dual-sign approval up to $250,000 AUD.\n3. Level 3 Executive General Manager: Discretionary authority up to $1,000,000 AUD.\n4. Board Risk Committee: All aggregate exposures exceeding $5,000,000 AUD.',
+        type: 'section'
+      },
+      {
+        id: 'sec-exec-risk',
+        title: '3. Prudential Compliance & Risk Appetite',
+        content: 'Defines the quantitative risk tolerance metrics, maximum portfolio concentration limits, and automated circuit-breaker thresholds for retail exposures.',
+        type: 'section'
+      },
+      {
+        id: 'sec-exec-telemetry',
+        title: '4. Operational Controls & Audit Telemetry',
+        content: 'Quarterly board reporting schedule, mandatory executive attestations, and immutable APRA compliance event logging.',
+        type: 'section'
+      }
+    ]
+  },
+  {
+    id: 'template-03-sop',
+    name: 'Template 3',
+    title: 'Operational Procedure',
+    dept: 'retail-lending',
+    sla: '4 Hours',
+    daily: '$25,000 AUD',
+    cap: '$100,000 AUD',
+    summary: 'Detailed step-by-step operating procedure for customer onboarding, loan origination, threshold checks, and event-driven lifecycle telemetry.',
+    sections: [
+      {
+        id: 'sec-sop-summary',
+        title: '1. Operational Summary & Eligibility Criteria',
+        content: 'Mandatory frontline procedure for validating applicant identity, income serviceability, and credit risk thresholds for retail consumer accounts.',
+        type: 'section'
+      },
+      {
+        id: 'sec-sop-kyc',
+        title: '2. Mandatory Verification & KYC Workflow',
+        content: '1. Applicant Eligibility: Australian resident, age 18+, minimum annual gross income of $35,000 AUD.\n2. Verification Steps: Real-time DVS national identity match, Biometric face liveness score >= 92%, and Equifax comprehensive credit report >= 620.\n3. Income Proof: 2 consecutive pay slips and 90-day bank transaction history analysis.',
+        type: 'section'
+      },
+      {
+        id: 'sec-sop-limits',
+        title: '3. Limit Thresholds & Turnaround SLAs',
+        content: 'Automated Tier 1 approvals up to $5,000 AUD; Credit Officer sign-off for Tier 2 up to $15,000 AUD; Department Manager approval for Tier 3 up to $50,000 AUD. Adjudication SLA: 4 Hours.',
+        type: 'section'
+      },
+      {
+        id: 'sec-sop-events',
+        title: '4. Operational Events & Lifecycle Triggers',
+        content: '1. Event: Customer Application Ingestion - Digital channel lodges customer application; real-time DVS verification invoked.\n2. Event: Escalation Threshold Trigger - Credit request > $15,000 AUD triggers Credit Officer assignment; > $25,000 AUD triggers Manager sign-off.\n3. Event: Limit Cap Verification - System checks daily limit ($25,000 AUD) and officer cap ($100,000 AUD) before decision execution.\n4. Event: Compliance Audit Logging - Immutable APRA CPS 234 event telemetry recorded with AUSTRAC filing if TTR threshold met.',
+        type: 'section'
+      }
+    ]
+  },
+  {
+    id: 'template-04-h1',
+    name: 'Template 4',
+    title: 'Statutory Standard',
+    dept: 'legal-compliance',
+    sla: '72 Hours',
+    daily: '$50,000 AUD',
+    cap: '$250,000 AUD',
+    summary: 'Comprehensive statutory compliance standard organized with formal H1 legal headings governing statutory mandates, risk resilience, and 72-hour breach notices.',
+    sections: [
+      {
+        id: 'sec-h1-statutory',
+        title: '1. Statutory Scope & Legal Mandate',
+        content: 'Governed by the Banking Act 1959, APRA Prudential Standard CPS 230 (Operational Risk), and the Privacy Act 1988. Establishes legal compliance across all banking products and operations.',
+        type: 'section'
+      },
+      {
+        id: 'sec-h1-resilience',
+        title: '2. Operational Resilience & Control Matrix',
+        content: 'Banks must identify all critical business operations and establish formal tolerance limits for operational disruptions, ensuring core settlement systems maintain recovery time objectives (RTO) under 2 hours.',
+        type: 'section'
+      },
+      {
+        id: 'sec-h1-vendors',
+        title: '3. Third-Party & Service Provider Due Diligence',
+        content: 'Formal assessment and ongoing monitoring of material service providers. Annual fourth-party supply chain audits and security posture evaluations mandatory for all Tier 1 vendors.',
+        type: 'section'
+      },
+      {
+        id: 'sec-h1-notification',
+        title: '4. Incident Response & 72-Hour Regulatory Notification',
+        content: 'Mandatory notification to APRA and AUSTRAC within 72 hours of becoming aware of an operational disruption or information security incident that materially impacts banking operations.',
+        type: 'section'
+      }
+    ]
+  }
+];
 
 export default function AddPolicyModal({
   isOpen,
@@ -33,8 +199,26 @@ export default function AddPolicyModal({
   // 3 Policy Creation Modes: 'direct' | 'library' | 'upload'
   const [creationMode, setCreationMode] = useState('direct');
 
+  // Direct In-System Template Selection State
+  const [selectedDirectTemplateId, setSelectedDirectTemplateId] = useState(null);
+  const [activeTemplateInfoId, setActiveTemplateInfoId] = useState(null);
+  const [expandedSectionId, setExpandedSectionId] = useState(null);
+  const [expandedModalSectionId, setExpandedModalSectionId] = useState(null);
+
   // Form Fields
   const [departmentId, setDepartmentId] = useState(preselectedDepartmentId || departments[0]?.id || 'company-policies');
+
+  // Synchronize department when modal opens or preselected department changes
+  useEffect(() => {
+    if (isOpen) {
+      if (preselectedDepartmentId) {
+        setDepartmentId(preselectedDepartmentId);
+      } else if (!departmentId && departments.length > 0) {
+        setDepartmentId(departments[0].id);
+      }
+    }
+  }, [isOpen, preselectedDepartmentId]);
+
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [content, setContent] = useState('');
@@ -140,6 +324,113 @@ export default function AddPolicyModal({
     setSections(prev => [...prev, newPara]);
   };
 
+  const handleSelectDirectTemplate = (template) => {
+    if (!template) return;
+    setSelectedDirectTemplateId(template.id);
+    setTitle(template.title);
+    setSummary(template.summary);
+    setTurnaroundSla(template.sla);
+    setDailyLimit(template.daily);
+    setOfficerCap(template.cap);
+    setSections(JSON.parse(JSON.stringify(template.sections)));
+    // Retain department if user opened creation modal for a specific department (e.g. '+' on Credit Cards)
+    if (!preselectedDepartmentId && template.dept) {
+      const match = departments.find(d => d.id === template.dept);
+      if (match) setDepartmentId(match.id);
+    }
+  };
+
+  const handleAddPresetSection = (name) => {
+    let presetContent = '';
+    let titleName = name;
+    if (name === 'Summary') {
+      titleName = 'Summary';
+      presetContent = 'Summary section provides a gist of the policy. It covers what is this policy about, applicability. Prefer to limit this into maximum three paragraphs. It is ok to introduce key bullet points.';
+    } else if (name === 'Details') {
+      titleName = 'Details';
+      presetContent = 'Detailed section expand the summary comments. It can have multiple sub sections. It contains text, table, images. It would remain a long section. Contains underwriting rules, credit score benchmarks, and authorization limits.';
+    } else if (name === 'Reports') {
+      titleName = 'Reports';
+      presetContent = 'Any predefined reports are shown in this section. User needs to map explicitly the report contents for this section to be display. Otherwise, user can only list the report id associated with this product (e.g. CBA-RPT-2026-01).';
+    } else if (name === 'Dependencies') {
+      titleName = 'Dependencies';
+      presetContent = 'This section covers any pre-requisite requirements, x-references to other policies, any regulatory references (APRA APS 220, CPS 234). Usually this is presented in a table or cross-reference list.';
+    } else if (name === 'Operational Events') {
+      titleName = 'Operational Events & Lifecycle Triggers';
+      presetContent = '1. Event: Customer Application Ingestion - Digital channel lodges customer application; real-time DVS verification invoked.\n2. Event: Escalation Threshold Trigger - Credit request > $15,000 AUD triggers Credit Officer assignment; > $25,000 AUD triggers Manager sign-off.\n3. Event: Limit Cap Verification - System checks daily limit ($25,000 AUD) and officer cap ($100,000 AUD) before decision execution.\n4. Event: Compliance Audit Logging - Immutable APRA CPS 234 event telemetry recorded with AUSTRAC filing if TTR threshold met.';
+    }
+    const newSec = {
+      id: `sec-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      title: titleName,
+      content: presetContent,
+      type: 'section'
+    };
+    setSections(prev => [...prev, newSec]);
+  };
+
+  const handleSaveDraft = async () => {
+    setErrorMessage('');
+    const draftTitle = title.trim() || 'Untitled Operational Policy (Draft)';
+
+    let finalContent = '';
+    if (sections.length > 0) {
+      finalContent = sections.map((sec, idx) => {
+        if (sec.type === 'paragraph' && !sec.title.trim()) return sec.content;
+        const heading = sec.title.trim() ? `### ${idx + 1}. ${sec.title.trim()}` : `### Paragraph ${idx + 1}`;
+        return `${heading}\n${sec.content}`;
+      }).join('\n\n');
+    } else {
+      finalContent = content || 'Draft operational policy clauses.';
+    }
+
+    setIsSubmitting(true);
+    try {
+      // 1. Direct in-database draft policy creation (policies table with status: 'draft')
+      await apiService.createPolicy({
+        department_id: departmentId || 'company-policies',
+        title: draftTitle,
+        summary: summary.trim() || draftTitle,
+        content: finalContent,
+        parameters: {
+          turnaround_sla: turnaroundSla,
+          daily_limit: dailyLimit,
+          approval_limits: { officer_cap: officerCap },
+          mandatory_dvs: true,
+          sections: sections
+        },
+        created_by: currentUser?.name || 'Current User',
+        creation_mode: creationMode,
+        status: 'draft'
+      });
+
+      // 2. Also register in maker-checker queue if not bank owner
+      if (!isBankOwner) {
+        const targetDeptName = departments.find(d => d.id === departmentId)?.name || 'Retail Banking';
+        try {
+          await apiService.createMakerCheckerItem({
+            type: 'create_policy',
+            title: `[Draft] ${draftTitle}`,
+            department: targetDeptName,
+            requested_by: `${currentUser?.name || 'Staff User'} (${currentUser?.role || 'Staff'})`,
+            change_details: `Policy draft authored in system. Mode: ${creationMode}. SLA: ${turnaroundSla}. Sections: ${sections.length}.`,
+            status: 'draft'
+          });
+        } catch (mcErr) {
+          console.warn('Maker checker draft sync note:', mcErr.message);
+        }
+      }
+
+      alert(`Policy draft "${draftTitle}" saved successfully!`);
+      if (onPolicyCreated) onPolicyCreated();
+      onClose();
+    } catch (err) {
+      console.error('Failed to save draft:', err);
+      setErrorMessage('Failed to save draft: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // AI Thinking state for document ingestion
   const [isAiThinking, setIsAiThinking] = useState(false);
   const [aiStep, setAiStep] = useState('');
@@ -149,6 +440,24 @@ export default function AddPolicyModal({
       setDepartmentId(preselectedDepartmentId);
     }
   }, [preselectedDepartmentId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedDirectTemplateId(null);
+      setActiveTemplateInfoId(null);
+      setTitle('');
+      setSummary('');
+      setTurnaroundSla('4 Hours');
+      setDailyLimit('$25,000 AUD');
+      setOfficerCap('$100,000 AUD');
+      setSections([]);
+    } else {
+      setExpandedSectionId(null);
+      setExpandedModalSectionId(null);
+      setActiveTemplateInfoId(null);
+      setErrorMessage('');
+    }
+  }, [isOpen]);
 
   // Master library templates
   const masterTemplates = [
@@ -1265,10 +1574,10 @@ Immediate escalation to Chief Compliance Officer prior to facility establishment
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl shadow-2xl border border-[#e5e7eb] w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div className="bg-[#f0f6fc] rounded-2xl shadow-2xl border border-blue-200/80 w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#e5e7eb] flex items-center justify-between bg-white">
+        <div className="px-6 py-4 border-b border-blue-200/70 flex items-center justify-between bg-white">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#0057B8]/10 text-[#0057B8] border border-[#0057B8]/30 flex items-center justify-center font-bold text-sm">
               +
@@ -1277,11 +1586,6 @@ Immediate escalation to Chief Compliance Officer prior to facility establishment
               <h2 className="text-base font-bold text-slate-900">
                 LibList • Create Operational Policy
               </h2>
-              <p className="text-[12px] text-slate-500">
-                {isBankOwner 
-                  ? 'Bank Owner Direct Publishing: Author or Adopt Master Governance Policies' 
-                  : 'Bank Employee Authoring: Submit Policy Proposals for Bank Owner Approval'}
-              </p>
             </div>
           </div>
           <button 
@@ -1293,7 +1597,7 @@ Immediate escalation to Chief Compliance Officer prior to facility establishment
         </div>
 
         {/* 3 Creation Modes Tab Bar */}
-        <div className="p-3 bg-slate-50 border-b border-[#e5e7eb] grid grid-cols-3 gap-2 text-[12.5px]">
+        <div className="p-3 bg-[#e8f1fb] border-b border-blue-200/70 grid grid-cols-3 gap-2 text-[12.5px]">
           <button
             type="button"
             onClick={() => setCreationMode('direct')}
@@ -1346,98 +1650,147 @@ Immediate escalation to Chief Compliance Officer prior to facility establishment
         )}
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 text-[13px] custom-scrollbar">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 text-[13px] custom-scrollbar bg-[#f0f6fc]">
           
           {/* MODE 1: DIRECT IN-SYSTEM */}
           {creationMode === 'direct' && (
             <div className="space-y-4 animate-in fade-in duration-150">
-              {/* Target Department Partition */}
+              
+              {/* STEP 1: CHOOSE STARTING TEMPLATE FIRST */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Target Department Partition
-                </label>
-                <select
-                  value={departmentId}
-                  onChange={(e) => setDepartmentId(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-[13px] bg-white font-medium text-slate-900 shadow-2xs"
-                >
-                  {departments.map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Policy Title */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Policy Title
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Credit Cards & Revolving Credit Assessment Guidelines"
-                  required
-                  className="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-[13px] bg-white font-semibold text-slate-900 shadow-2xs"
-                />
-              </div>
-
-              {/* Executive Summary & Scope */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Executive Summary & Statutory Scope
-                </label>
-                <textarea
-                  rows={3}
-                  value={summary}
-                  onChange={(e) => setSummary(e.target.value)}
-                  placeholder="Comprehensive executive summary, statutory purpose, and regulatory scope..."
-                  className="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-xs text-slate-800 bg-white shadow-2xs font-sans leading-relaxed"
-                />
-              </div>
-
-              {/* SLA and Ceilings Grid (Image 1 Inputs) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Turnaround SLA
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    1. Choose Starting Template
                   </label>
-                  <input
-                    type="text"
-                    value={turnaroundSla}
-                    onChange={(e) => setTurnaroundSla(e.target.value)}
-                    placeholder="e.g. 4 Hours"
-                    className="w-full p-2 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-xs bg-white font-medium shadow-2xs"
-                  />
+                  {selectedDirectTemplateId && (
+                    <span className="text-[11px] text-[#0057B8] font-bold bg-blue-100/70 border border-blue-200 px-2 py-0.5 rounded-full">
+                      {POLICY_TEMPLATES.find(t => t.id === selectedDirectTemplateId)?.name} Selected
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Daily Limit
-                  </label>
-                  <input
-                    type="text"
-                    value={dailyLimit}
-                    onChange={(e) => setDailyLimit(e.target.value)}
-                    placeholder="e.g. $25,000 AUD"
-                    className="w-full p-2 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-xs bg-white font-medium shadow-2xs"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Officer Cap
-                  </label>
-                  <input
-                    type="text"
-                    value={officerCap}
-                    onChange={(e) => setOfficerCap(e.target.value)}
-                    placeholder="e.g. $100,000 AUD"
-                    className="w-full p-2 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-xs bg-white font-medium shadow-2xs"
-                  />
+
+                {/* 4 Simple Template Cards with (i) Info Icon Button */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {POLICY_TEMPLATES.map((tpl) => {
+                    const isSelected = selectedDirectTemplateId === tpl.id;
+                    return (
+                      <div
+                        key={tpl.id}
+                        onClick={() => handleSelectDirectTemplate(tpl)}
+                        className={`relative p-3 rounded-xl border transition-all cursor-pointer text-left flex flex-col justify-between ${
+                          isSelected
+                            ? 'bg-[#0057B8] text-white border-[#0057B8] shadow-sm font-bold ring-2 ring-[#0057B8]/25'
+                            : 'bg-white text-slate-700 border-blue-200/90 hover:border-[#0057B8] hover:bg-blue-50/50 shadow-2xs'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1 w-full">
+                          <span className={`text-[12.5px] font-bold ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                            {tpl.name}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {/* Info icon button toggles clean info tooltip/popover */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveTemplateInfoId(activeTemplateInfoId === tpl.id ? null : tpl.id);
+                              }}
+                              className={`p-1 rounded-md transition cursor-pointer ${
+                                isSelected 
+                                  ? 'text-white/80 hover:text-white hover:bg-white/20' 
+                                  : 'text-slate-400 hover:text-[#0057B8] hover:bg-blue-100/70'
+                              }`}
+                              title={`View ${tpl.name} info`}
+                            >
+                              <Info className="w-3.5 h-3.5" />
+                            </button>
+                            {isSelected && (
+                              <Check className="w-3.5 h-3.5 text-white flex-shrink-0" />
+                            )}
+                          </div>
+                        </div>
+
+                        <span className={`text-[11.5px] font-medium truncate mt-1 block ${isSelected ? 'text-blue-100' : 'text-slate-600'}`}>
+                          {tpl.title}
+                        </span>
+
+                        {/* Minimal info popover */}
+                        {activeTemplateInfoId === tpl.id && (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute left-0 top-full mt-2 z-40 w-64 p-3 bg-white text-slate-800 rounded-xl shadow-xl border border-blue-200 text-xs animate-in fade-in duration-150"
+                          >
+                            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 mb-1.5 font-bold text-slate-900">
+                              <span>{tpl.name} • {tpl.title}</span>
+                              <button
+                                type="button"
+                                onClick={() => setActiveTemplateInfoId(null)}
+                                className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <p className="text-[11px] leading-relaxed text-slate-600">
+                              {tpl.summary}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Policy Sections & Modular Clauses (Image 1 Builder) */}
-              <div className="pt-2 border-t border-slate-200/80 space-y-3">
+              {/* Prompt if no template chosen yet */}
+              {!selectedDirectTemplateId && (
+                <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-blue-200 text-slate-500 space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0057B8] flex items-center justify-center mx-auto">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <p className="font-bold text-slate-800 text-[13.5px]">Please select a starting template</p>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Choose Template 1, 2, 3, or 4 above to initialize institutional clauses and open document editing options.
+                  </p>
+                </div>
+              )}
+
+              {/* STEP 2: DOCUMENT CONFIGURATION & CLAUSES (REVEALED AFTER TEMPLATE SELECTION) */}
+              {selectedDirectTemplateId && (
+                <div className="space-y-4 pt-1 border-t border-blue-200/60 animate-in fade-in duration-150">
+                  {/* Target Department Partition & Policy Title */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-1">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Target Department
+                      </label>
+                      <select
+                        value={departmentId}
+                        onChange={(e) => setDepartmentId(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-[13px] bg-white font-medium text-slate-900 shadow-2xs"
+                      >
+                        {departments.map(d => (
+                          <option key={d.id} value={d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                        Policy Title
+                      </label>
+                      <input
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="e.g. Credit Assessment & Approval Guidelines"
+                        required
+                        className="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-[13px] bg-white font-semibold text-slate-900 shadow-2xs"
+                      />
+                    </div>
+                  </div>
+
+              {/* Policy Sections & Modular Clauses (Image 4 Builder) */}
+              <div className="pt-1 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <h3 className="font-bold text-slate-900 text-[13.5px] flex items-center gap-2">
@@ -1445,7 +1798,7 @@ Immediate escalation to Chief Compliance Officer prior to facility establishment
                       <span>Policy Sections & Modular Clauses ({sections.length})</span>
                     </h3>
                     <p className="text-[11.5px] text-slate-500">
-                      Edit section titles, reorder above or below, delete, or add standalone paragraphs.
+                      Edit clause specifications, reorder above or below, delete, or add standalone paragraphs.
                     </p>
                   </div>
 
@@ -1469,78 +1822,89 @@ Immediate escalation to Chief Compliance Officer prior to facility establishment
                   </div>
                 </div>
 
-                {/* Section Cards List */}
+                {/* Section Cards List - Pure White Cards with Separate Full-Screen Popup Expand Option */}
                 <div className="space-y-3">
-                  {sections.map((section, idx) => (
-                    <div
-                      key={section.id || idx}
-                      className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 transition shadow-2xs space-y-2.5"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span className="w-6 h-6 rounded-md bg-[#0057B8] text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0 font-mono shadow-2xs">
-                            {idx + 1}
-                          </span>
-                          <input
-                            type="text"
-                            value={section.title}
-                            onChange={(e) => handleUpdateSectionTitle(section.id, e.target.value)}
-                            placeholder={section.type === 'paragraph' ? "Paragraph Heading (optional)" : "Section Title"}
-                            className="font-bold text-[13px] text-slate-900 bg-white border border-slate-300 focus:border-[#0057B8] focus:ring-1 focus:ring-[#0057B8] px-2.5 py-1 rounded-md outline-none flex-1 transition shadow-2xs"
-                          />
-                          {section.type === 'paragraph' && (
-                            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase flex-shrink-0">
-                              Paragraph
+                  {sections.map((section, idx) => {
+                    return (
+                      <div
+                        key={section.id || idx}
+                        className="p-3.5 rounded-xl border border-slate-200/90 bg-white hover:border-[#0057B8]/40 shadow-xs space-y-2.5 transition"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="w-6 h-6 rounded-md bg-[#0057B8] text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0 font-mono shadow-2xs">
+                              {idx + 1}
                             </span>
-                          )}
+                            <div className="flex-1 min-w-0">
+                              <span className="font-bold text-[13.5px] text-slate-900 tracking-tight block truncate select-none">
+                                {section.title || (section.type === 'paragraph' ? 'Paragraph' : `Section ${idx + 1}`)}
+                              </span>
+                            </div>
+                            {section.type === 'paragraph' && (
+                              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded uppercase flex-shrink-0">
+                                Paragraph
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {/* Expand clause in big-screen separate popup */}
+                            <button
+                              type="button"
+                              onClick={() => setExpandedModalSectionId(section.id)}
+                              className="p-1.5 rounded-lg transition text-slate-400 hover:text-[#0057B8] hover:bg-blue-50 cursor-pointer"
+                              title="Expand clause in full-screen popup"
+                            >
+                              <Maximize2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => handleMoveSectionUp(idx)}
+                              className={`p-1.5 rounded transition ${
+                                idx === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200 cursor-pointer'
+                              }`}
+                              title="Move section above (up)"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === sections.length - 1}
+                              onClick={() => handleMoveSectionDown(idx)}
+                              className={`p-1.5 rounded transition ${
+                                idx === sections.length - 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200 cursor-pointer'
+                              }`}
+                              title="Move section below (down)"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSection(section.id)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer"
+                              title="Delete section"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <button
-                            type="button"
-                            disabled={idx === 0}
-                            onClick={() => handleMoveSectionUp(idx)}
-                            className={`p-1.5 rounded transition ${
-                              idx === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200 cursor-pointer'
-                            }`}
-                            title="Move section above (up)"
-                          >
-                            <ArrowUp className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={idx === sections.length - 1}
-                            onClick={() => handleMoveSectionDown(idx)}
-                            className={`p-1.5 rounded transition ${
-                              idx === sections.length - 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-200 cursor-pointer'
-                            }`}
-                            title="Move section below (down)"
-                          >
-                            <ArrowDown className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteSection(section.id)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer"
-                            title="Delete section"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        <textarea
+                          rows={Math.max(3, Math.min(6, Math.ceil((section.content || '').length / 90)))}
+                          value={section.content}
+                          onChange={(e) => handleUpdateSectionContent(section.id, e.target.value)}
+                          placeholder={`Enter ${section.title || 'section'} details, operational requirements, or rules...`}
+                          className="w-full p-2.5 rounded-lg border border-slate-200 focus:outline-none focus:border-[#0057B8] focus:ring-1 focus:ring-[#0057B8] text-xs leading-relaxed text-slate-800 bg-white placeholder-slate-400 shadow-2xs font-sans transition-all"
+                        />
                       </div>
-
-                      <textarea
-                        rows={Math.max(3, Math.min(8, Math.ceil((section.content || '').length / 90)))}
-                        value={section.content}
-                        onChange={(e) => handleUpdateSectionContent(section.id, e.target.value)}
-                        placeholder={`Enter ${section.title || 'section'} details, operational requirements, or rules...`}
-                        className="w-full p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-1 focus:ring-[#0057B8] text-xs leading-relaxed text-slate-800 bg-white placeholder-slate-400 shadow-2xs font-sans"
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
-                {/* Quick Add Presets Bar */}
+                {/* Quick Add Presets Bar (commented out as requested) */}
+                {/*
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11.5px] text-slate-500">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="font-semibold text-slate-600">Quick Add:</span>
@@ -1548,7 +1912,7 @@ Immediate escalation to Chief Compliance Officer prior to facility establishment
                       <button
                         key={name}
                         type="button"
-                        onClick={() => handleAddSection(name)}
+                        onClick={() => handleAddPresetSection(name)}
                         className="px-2.5 py-1 bg-white hover:bg-blue-50 hover:text-[#0057B8] hover:border-[#0057B8] text-slate-600 border border-slate-300 rounded-lg text-[11px] font-semibold transition cursor-pointer shadow-2xs"
                       >
                         +{name}
@@ -1563,7 +1927,71 @@ Immediate escalation to Chief Compliance Officer prior to facility establishment
                     + Add as single paragraph
                   </button>
                 </div>
+                */}
               </div>
+
+              {/* Executive Summary & Scope + SLA / Daily Limit / Officer Cap Grid (Image 1) - ONLY FOR EXECUTIVE SUMMARY TEMPLATE */}
+              {selectedDirectTemplateId === 'template-02-exec' && (
+                <div className="pt-3 border-t border-slate-200 space-y-3.5 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs">
+                  {/* Executive Summary & Scope */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Executive Summary & Statutory Scope
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={summary}
+                      onChange={(e) => setSummary(e.target.value)}
+                      placeholder="Comprehensive executive summary, statutory purpose, and regulatory scope..."
+                      className="w-full p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-xs text-slate-800 bg-white shadow-2xs font-sans leading-relaxed"
+                    />
+                  </div>
+
+                  {/* SLA and Ceilings Grid (Image 1 Inputs) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Turnaround SLA
+                      </label>
+                      <input
+                        type="text"
+                        value={turnaroundSla}
+                        onChange={(e) => setTurnaroundSla(e.target.value)}
+                        placeholder="e.g. 4 Hours"
+                        className="w-full p-2 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-xs bg-white font-medium shadow-2xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Daily Limit
+                      </label>
+                      <input
+                        type="text"
+                        value={dailyLimit}
+                        onChange={(e) => setDailyLimit(e.target.value)}
+                        placeholder="e.g. $25,000 AUD"
+                        className="w-full p-2 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-xs bg-white font-medium shadow-2xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Officer Cap
+                      </label>
+                      <input
+                        type="text"
+                        value={officerCap}
+                        onChange={(e) => setOfficerCap(e.target.value)}
+                        placeholder="e.g. $100,000 AUD"
+                        className="w-full p-2 rounded-xl border border-slate-300 focus:outline-none focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/15 text-xs bg-white font-medium shadow-2xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+                </div>
+              )}
+
             </div>
           )}
 
@@ -2411,27 +2839,173 @@ Immediate escalation to Chief Compliance Officer prior to facility establishment
         </form>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-[#e5e7eb] flex items-center justify-end gap-2 bg-slate-50/50">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-[13px] text-slate-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting || isAiThinking}
-            className="px-5 py-2 text-[13px] font-semibold text-white bg-[#0057B8] hover:bg-[#004EA6] rounded-lg shadow-xs transition cursor-pointer"
-          >
-            {isSubmitting 
-              ? (isBankOwner ? 'Publishing Policy...' : 'Submitting Proposal...') 
-              : creationMode === 'library'
-                ? (isBankOwner ? 'Adopt & Publish Policy' : 'Submit Template Proposal')
-                : (isBankOwner ? 'Publish Policy' : 'Submit for Approval')}
-          </button>
+        <div className="px-6 py-3 border-t border-blue-200/80 flex items-center justify-between bg-white">
+          <div>
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={isSubmitting || isAiThinking}
+              className="px-4 py-2 text-[12.5px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl shadow-2xs transition cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
+            >
+              <Save className="w-3.5 h-3.5 text-amber-600" />
+              <span>Save to Draft</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-[13px] text-slate-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || isAiThinking}
+              className="px-5 py-2 text-[13px] font-semibold text-white bg-[#0057B8] hover:bg-[#004EA6] rounded-lg shadow-xs transition cursor-pointer"
+            >
+              {isSubmitting 
+                ? (isBankOwner ? 'Publishing Policy...' : 'Submitting Proposal...') 
+                : creationMode === 'library'
+                  ? (isBankOwner ? 'Adopt & Publish Policy' : 'Submit Template Proposal')
+                  : (isBankOwner ? 'Publish Operational Policy' : 'Submit for Bank Owner Approval')}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* SEPARATE BIG-SCREEN POPUP FOR CLAUSE EXPANSION (PAGE-BY-PAGE EXPERIENCE) */}
+      {expandedModalSectionId && (() => {
+        const currentSectionIndex = sections.findIndex(s => s.id === expandedModalSectionId);
+        const currentSection = sections[currentSectionIndex] || sections[0];
+        const totalSections = sections.length;
+        const hasPrev = currentSectionIndex > 0;
+        const hasNext = currentSectionIndex < totalSections - 1;
+
+        if (!currentSection) return null;
+
+        return (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-6 animate-in fade-in duration-150">
+            <div className="bg-white rounded-2xl shadow-2xl border border-blue-200 w-full max-w-4xl h-[86vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-blue-50/80 via-sky-50/40 to-white">
+                <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
+                  <span className="w-8 h-8 rounded-lg bg-[#0057B8] text-white font-mono font-bold text-sm flex items-center justify-center flex-shrink-0 shadow-xs">
+                    {currentSectionIndex + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#0057B8] bg-blue-100/90 px-2 py-0.5 rounded-full inline-block">
+                        Page {currentSectionIndex + 1} of {totalSections}
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-medium hidden sm:inline-block">
+                        Clause Full-Screen Editor
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-[16px] text-slate-900 tracking-tight select-none truncate">
+                      {currentSection.title || (currentSection.type === 'paragraph' ? 'Paragraph' : `Section ${currentSectionIndex + 1}`)}
+                    </h3>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpandedModalSectionId(null)}
+                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl cursor-pointer transition flex-shrink-0"
+                  title="Close expanded editor"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Textarea Body */}
+              <div className="p-6 flex-1 flex flex-col bg-white overflow-hidden space-y-2">
+                <div className="flex items-center justify-between text-xs text-slate-500 font-medium pb-1">
+                  <span>Edit detailed operational clauses, specifications, thresholds, and regulatory logic:</span>
+                  <span className="font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                    {(currentSection.content || '').length} characters
+                  </span>
+                </div>
+                <textarea
+                  key={currentSection.id}
+                  value={currentSection.content || ''}
+                  onChange={(e) => handleUpdateSectionContent(currentSection.id, e.target.value)}
+                  placeholder="Enter complete clause specifications, operational steps, or regulatory requirements..."
+                  className="w-full flex-1 p-4 rounded-xl border-2 border-slate-200 focus:border-[#0057B8] focus:ring-2 focus:ring-[#0057B8]/20 outline-none text-[13.5px] leading-relaxed text-slate-800 bg-[#fbfcfe] font-sans resize-none shadow-inner custom-scrollbar"
+                  autoFocus
+                />
+              </div>
+
+              {/* Footer with Page Navigation: Previous Page, Next Page, and Done */}
+              <div className="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                  <span className="font-bold text-slate-700">Page {currentSectionIndex + 1} of {totalSections}</span>
+                  <span>•</span>
+                  <span className="hidden sm:inline">Changes synchronized automatically</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {/* Previous Page Button */}
+                  <button
+                    type="button"
+                    disabled={!hasPrev}
+                    onClick={() => {
+                      if (hasPrev) {
+                        setExpandedModalSectionId(sections[currentSectionIndex - 1].id);
+                      }
+                    }}
+                    className={`px-3.5 py-2 text-xs font-semibold rounded-xl border flex items-center gap-1.5 transition ${
+                      hasPrev 
+                        ? 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 cursor-pointer shadow-2xs' 
+                        : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-50'
+                    }`}
+                    title="Move to previous clause page"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Previous Page</span>
+                  </button>
+
+                  {/* Next Page Button */}
+                  {hasNext ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExpandedModalSectionId(sections[currentSectionIndex + 1].id);
+                      }}
+                      className="px-4 py-2 bg-[#0057B8] hover:bg-[#004EA6] text-white font-bold rounded-xl text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 active:scale-95"
+                      title="Move to next clause page"
+                    >
+                      <span>Next Page</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedModalSectionId(null)}
+                      className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5 active:scale-95"
+                      title="All pages complete - return to policy"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Done & Return</span>
+                    </button>
+                  )}
+
+                  {/* Return anytime */}
+                  {hasNext && (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedModalSectionId(null)}
+                      className="px-3.5 py-2 text-xs text-slate-600 hover:bg-slate-200/70 rounded-xl transition cursor-pointer"
+                    >
+                      Done & Return
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

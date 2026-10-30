@@ -12,11 +12,19 @@ import SplashScreen from './components/SplashScreen';
 import NotificationsModal from './components/NotificationsModal';
 import BankUserManagerModal from './components/BankUserManagerModal';
 import SuperAdminLoginModal from './components/SuperAdminLoginModal';
+import VectorSpaceModal from './components/VectorSpaceModal';
 import { apiService } from './services/apiService';
 import { banksList, policiesDatabase } from './data/mockData';
 import { DEFAULT_POLICIES, DEFAULT_DEPARTMENTS } from './data/defaultPolicies';
 
 export default function App() {
+  // Standalone /3dviewer route redirect
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window.location.pathname === '/3dviewer' || window.location.pathname === '/3dview')) {
+      window.location.href = 'http://localhost:5000/3dviewer';
+    }
+  }, []);
+
   // Initial loading splash screen
   const [showSplash, setShowSplash] = useState(true);
 
@@ -75,6 +83,7 @@ export default function App() {
   const [isNotificationsModalOpen, setIsNotificationsModalOpen] = useState(false);
   const [isBankUserManagerOpen, setIsBankUserManagerOpen] = useState(false);
   const [isSuperAdminModalOpen, setIsSuperAdminModalOpen] = useState(false);
+  const [isVectorSpaceOpen, setIsVectorSpaceOpen] = useState(false);
   const [preselectedDept, setPreselectedDept] = useState({ id: null, name: '' });
 
   // Bank Users & Role-Based Access Control State (Bank Owner Governance)
@@ -459,6 +468,7 @@ export default function App() {
         onOpenNotifications={() => setIsNotificationsModalOpen(true)}
         onOpenBankUserManagerModal={() => setIsBankUserManagerOpen(true)}
         onOpenSuperAdminModal={() => setIsSuperAdminModalOpen(true)}
+        onOpenVectorSpace={() => setIsVectorSpaceOpen(true)}
         isLeftOpen={isLeftOpen}
         onToggleLeft={() => setIsLeftOpen(!isLeftOpen)}
         isRightOpen={isRightOpen}
@@ -516,6 +526,9 @@ export default function App() {
                   }
                 }}
                 onOpenAddPolicyModal={handleOpenAddPolicyModal}
+                onOpenVectorSpace={() => setIsVectorSpaceOpen(true)}
+                onOpenMakerChecker={() => setIsMakerCheckerOpen(true)}
+                onOpenConfigureModal={() => setIsConfigureModalOpen(true)}
                 canCreateDocument={canCurrentUserCreateDocument}
                 isMobileOpen={isMobileLeftOpen}
                 onCloseMobile={() => setIsMobileLeftOpen(false)}
@@ -581,9 +594,19 @@ export default function App() {
         onClose={() => setIsMakerCheckerOpen(false)}
         items={makerCheckerData.pending}
         history={makerCheckerData.history}
+        drafts={makerCheckerData.drafts || allPolicies.filter(p => p.status === 'draft')}
+        policies={allPolicies}
         currentUser={currentUser}
         onAction={handleMakerCheckerAction}
         onCloseItem={handleCloseMakerCheckerItem}
+        onSelectPolicy={(id) => {
+          setSelectedPolicyId(id);
+          setIsMakerCheckerOpen(false);
+        }}
+        onRefresh={() => {
+          setRefreshTrigger(prev => prev + 1);
+          loadMakerChecker();
+        }}
       />
 
       {/* 2. Configure Operational Policy Modal (In-System Parameter Editor) */}
@@ -645,6 +668,20 @@ export default function App() {
         isOpen={isSuperAdminModalOpen}
         onClose={() => setIsSuperAdminModalOpen(false)}
         onLoginAsSuperAdmin={(adminUser) => handleSelectUser(adminUser)}
+      />
+
+      {/* 8. 3D Vector Space DB Visualizer */}
+      <VectorSpaceModal
+        isOpen={isVectorSpaceOpen}
+        onClose={() => setIsVectorSpaceOpen(false)}
+        policies={allPolicies}
+        onSelectPolicy={(id) => {
+          setSelectedPolicyId(id);
+          const pol = allPolicies.find(p => p.id === id);
+          if (pol && pol.department_id) {
+            setSelectedDepartmentId(pol.department_id);
+          }
+        }}
       />
     </div>
   );

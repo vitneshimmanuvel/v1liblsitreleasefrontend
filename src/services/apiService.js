@@ -86,6 +86,13 @@ export const apiService = {
     return await res.json();
   },
 
+  async deletePolicy(id) {
+    const res = await fetch(`${API_BASE}/policies/${id}`, {
+      method: 'DELETE'
+    });
+    return await res.json();
+  },
+
   // 3. Maker-Checker Governance & Notifications
   async getMakerCheckerItems() {
     try {
@@ -96,6 +103,15 @@ export const apiService = {
       console.warn('API error for maker-checker:', e);
       return { pendingCount: 0, pending: [], history: [] };
     }
+  },
+
+  async createMakerCheckerItem(itemData) {
+    const res = await fetch(`${API_BASE}/maker-checker`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(itemData)
+    });
+    return await res.json();
   },
 
   async actionMakerChecker(id, action, checkerName, comments) {
@@ -174,6 +190,19 @@ export const apiService = {
     } catch (e) {
       console.warn('RAG query error:', e);
       return null;
+    }
+  },
+
+  async getVectors(departmentId = 'all') {
+    try {
+      const url = new URL(`${API_BASE}/vectors`);
+      if (departmentId && departmentId !== 'all') url.searchParams.append('department_id', departmentId);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed to fetch vectors');
+      return await res.json();
+    } catch (e) {
+      console.warn('Vectors fetch error, using client fallback:', e);
+      return [];
     }
   }
 };

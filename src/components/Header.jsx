@@ -14,6 +14,7 @@ import {
   Layers,
   KeyRound,
   Users,
+  Box,
   X
 } from 'lucide-react';
 
@@ -27,6 +28,7 @@ export default function Header({
   onOpenNotifications,
   onOpenBankUserManagerModal,
   onOpenSuperAdminModal,
+  onOpenVectorSpace,
   isLeftOpen,
   onToggleLeft,
   isRightOpen,
@@ -159,6 +161,18 @@ export default function Header({
           >
             <Users className="w-3.5 h-3.5" />
             <span>Bank Users & Access</span>
+          </button>
+        )}
+
+        {/* 3D Vector DB Topology Visualizer */}
+        {onOpenVectorSpace && (
+          <button
+            onClick={onOpenVectorSpace}
+            title="Interactive 3D Vector Space & Policy Semantic Topology"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-bold bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-[#0057B8] hover:to-indigo-600 text-[#0057B8] hover:text-white border-2 border-blue-200/80 hover:border-[#0057B8] shadow-2xs transition-all cursor-pointer active:scale-95"
+          >
+            <Box className="w-3.5 h-3.5 text-indigo-600 group-hover:text-white" />
+            <span>3D Vector DB</span>
           </button>
         )}
 

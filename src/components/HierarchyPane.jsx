@@ -24,7 +24,10 @@ import {
   Link as LinkIcon,
   CheckCircle2,
   Building2,
-  Check
+  Box,
+  Check,
+  Sliders,
+  RefreshCw
 } from 'lucide-react';
 import { apiService } from '../services/apiService';
 import { DEFAULT_POLICIES, DEFAULT_DEPARTMENTS } from '../data/defaultPolicies';
@@ -57,6 +60,9 @@ export default function HierarchyPane({
   selectedPolicyId,
   onSelectPolicy,
   onOpenAddPolicyModal,
+  onOpenVectorSpace,
+  onOpenMakerChecker,
+  onOpenConfigureModal,
   canCreateDocument = true,
   isMobileOpen,
   onCloseMobile,
@@ -168,23 +174,13 @@ export default function HierarchyPane({
   });
   const allAvailablePolicies = Array.from(policyMap.values());
 
-  // Filter departments: Split into primary active banking categories vs empty/secondary categories
+  // Filter departments: Only show primary active banking categories
   const primaryDeptIds = ['credit-cards', 'retail-lending', 'onboarding', 'security', 'legal-compliance'];
-  const [showOtherCategories, setShowOtherCategories] = useState(false);
-
   const activeDepartments = departments.filter(d => 
     primaryDeptIds.includes(d.id) || (d.count && d.count > 0)
   );
 
-  const otherDepartments = departments.filter(d => 
-    !primaryDeptIds.includes(d.id) && (!d.count || d.count === 0)
-  );
-
   const displayedPrimary = activeDepartments.filter(d => 
-    d.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const displayedOther = otherDepartments.filter(d => 
     d.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -244,7 +240,7 @@ export default function HierarchyPane({
               Workspace Core
             </div>
             <nav className="space-y-0.5">
-              {/* Task List with 3 Active badge */}
+              {/* 1. Task List with 3 Active badge */}
               <button
                 onClick={() => setIsTaskModalOpen(true)}
                 className="w-full flex items-center justify-between px-2.5 py-1.5 text-[12px] rounded-lg text-slate-700 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200 shadow-xs hover:shadow-2xs transition group cursor-pointer text-left"
@@ -257,6 +253,67 @@ export default function HierarchyPane({
                   3 Active
                 </span>
               </button>
+
+              {/* 2. Templates (Clone/Create) - Opens AddPolicyModal with Template Selector */}
+              <button
+                onClick={() => onOpenAddPolicyModal && onOpenAddPolicyModal()}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[12px] rounded-lg text-slate-700 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200 shadow-xs hover:shadow-2xs transition group cursor-pointer text-left"
+                title="Browse & Clone Policy Templates"
+              >
+                <span className="flex items-center gap-2 font-medium">
+                  <FileCode className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Templates</span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Clone/Create
+                </span>
+              </button>
+
+              {/* 3. Standards Library (APRA/CPS Standards) */}
+              <button
+                onClick={() => {
+                  if (onSelectDepartment) onSelectDepartment('legal-compliance');
+                }}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[12px] rounded-lg text-slate-700 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200 shadow-xs hover:shadow-2xs transition group cursor-pointer text-left"
+                title="APRA CPS 230 / CPS 234 Standards Library"
+              >
+                <span className="flex items-center gap-2 font-medium">
+                  <Shield className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Standards Library</span>
+                </span>
+              </button>
+
+              {/* 4. Change Management (Drafts) */}
+              <button
+                onClick={() => {
+                  if (onOpenMakerChecker) onOpenMakerChecker();
+                }}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[12px] rounded-lg text-slate-700 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200 shadow-xs hover:shadow-2xs transition group cursor-pointer text-left"
+                title="Change Management & Pending Review Drafts"
+              >
+                <span className="flex items-center gap-2 font-medium">
+                  <RefreshCw className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Change Management</span>
+                </span>
+                <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-1.5 py-0.2 rounded-md font-semibold">
+                  Drafts
+                </span>
+              </button>
+
+              {/* 5. Settings */}
+              <button
+                onClick={() => {
+                  if (onOpenConfigureModal) onOpenConfigureModal();
+                }}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[12px] rounded-lg text-slate-700 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-200 shadow-xs hover:shadow-2xs transition group cursor-pointer text-left"
+                title="Policy Governance & Threshold Settings"
+              >
+                <span className="flex items-center gap-2 font-medium">
+                  <Sliders className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Settings</span>
+                </span>
+              </button>
+
             </nav>
           </div>
 
@@ -477,6 +534,13 @@ export default function HierarchyPane({
                                   >
                                     <Pin className={`w-2.5 h-2.5 ${isPinnedPol ? 'fill-current' : ''}`} />
                                   </button>
+                                  {pol.status === 'draft' && (
+                                    <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                                      isPolSelected ? 'bg-amber-400 text-amber-950 font-black' : 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    }`}>
+                                      Draft
+                                    </span>
+                                  )}
                                   <span className={`text-[9.5px] font-mono px-1 py-0.2 rounded ${
                                     isPolSelected ? 'bg-slate-800 text-slate-300' : 'bg-slate-200/60 text-slate-500'
                                   }`}>
@@ -493,42 +557,6 @@ export default function HierarchyPane({
                 );
               })}
             </div>
-
-            {/* COLLAPSIBLE SECTION FOR OTHER ZERO-COUNT CATEGORIES */}
-            {displayedOther.length > 0 && (
-              <div className="pt-2 border-t border-slate-200/70 mt-2">
-                <button
-                  onClick={() => setShowOtherCategories(!showOtherCategories)}
-                  className="w-full flex items-center justify-between px-2.5 py-1 text-[11.5px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100/60 rounded-md transition cursor-pointer"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <ChevronRight className={`w-3 h-3 transition-transform text-slate-400 ${showOtherCategories ? 'rotate-90 text-slate-700' : ''}`} />
-                    <span>Other Library Partitions</span>
-                  </span>
-                  <span className="text-[10px] bg-slate-200/60 text-slate-500 px-1.5 py-0.2 rounded font-mono">
-                    +{displayedOther.length}
-                  </span>
-                </button>
-
-                {showOtherCategories && (
-                  <div className="mt-1 space-y-0.5 pl-2 border-l border-slate-300/60">
-                    {displayedOther.map(dept => (
-                      <div
-                        key={dept.id}
-                        onClick={() => onSelectDepartment(dept.id)}
-                        className="flex items-center justify-between px-2 py-1 text-[11px] text-slate-600 hover:bg-slate-200/50 rounded cursor-pointer"
-                      >
-                        <div className="flex items-center gap-1.5 truncate">
-                          {getDeptIcon(dept.icon, "w-3 h-3 text-slate-400")}
-                          <span className="truncate">{dept.name}</span>
-                        </div>
-                        <span className="text-[10px] text-slate-400">0</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
         </div>
